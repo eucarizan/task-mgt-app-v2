@@ -26,4 +26,23 @@ public class AccountServiceTest {
         assertNotNull(account.getPassword());
         verify(accountRepository).save(any(Account.class));
     }
+
+    @Test
+    void shouldThrowConflictWhenEmailAlreadyExistsIgnoringCase() {
+        AccountRepository accountRepository = mock(AccountRepository.class);
+        when(accountRepository.existsByEmailIgnoreCase(any())).thenReturn(true);
+
+        AccountService accountService = new AccountService(accountRepository);
+
+        String email = "User@Example.com";
+        String password = "secure123";
+        EmailAlreadyExistsException ex = assertThrows(
+                EmailAlreadyExistsException.class,
+                () -> accountService.register(email, password)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("email"));
+
+        verify(accountRepository, never()).save(any(Account.class));
+        verify(accountRepository).existsByEmailIgnoreCase(email);
+    }
 }
