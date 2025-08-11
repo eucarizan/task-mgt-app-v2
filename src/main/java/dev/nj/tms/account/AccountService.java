@@ -9,9 +9,14 @@ public class AccountService {
     }
 
     public Account register(String email, String password) {
+        if (email == null) {
+            throw new IllegalArgumentException("Email cannot be null");
+        }
+
         if (accountRepository.existsByEmailIgnoreCase(email)) {
             throw new EmailAlreadyExistsException("Email already exists: " + email);
         }
+
         Account account = new Account(email, password);
         accountRepository.save(account);
         return account;
