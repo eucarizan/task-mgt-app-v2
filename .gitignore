@@ -38,3 +38,4 @@ build/
 *.db
 text.txt
 SAMPLE.md
+.gradle/
