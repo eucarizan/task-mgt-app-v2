@@ -138,6 +138,23 @@ public class AccountControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    // Integration test
+
+    @Test
+    void shouldReturn200WhenCreatingValidAccountWithRealDatabase() throws Exception {
+        String email = "user6@example.com";
+        String password = "secure123";
+
+        NewAccountDto dto = new NewAccountDto(email, password);
+
+        mockMvc.perform(post("/api/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.id").exists());
+    }
+
     private static String asJsonString(final Object obj) throws JsonProcessingException {
         return new ObjectMapper().writeValueAsString(obj);
     }
