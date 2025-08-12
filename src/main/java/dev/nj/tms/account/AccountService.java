@@ -17,6 +17,10 @@ public class AccountService {
             throw new IllegalArgumentException("Invalid email format");
         }
 
+        if (password == null) {
+            throw new IllegalArgumentException("Password is required");
+        }
+
         if (accountRepository.existsByEmailIgnoreCase(email)) {
             throw new EmailAlreadyExistsException("Email already exists: " + email);
         }

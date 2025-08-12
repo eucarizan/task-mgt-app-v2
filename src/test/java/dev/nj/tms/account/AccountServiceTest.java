@@ -101,4 +101,18 @@ public class AccountServiceTest {
         );
         assertTrue(ex.getMessage().toLowerCase().contains("email"));
     }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenPasswordIsNull() {
+        AccountRepository accountRepository = mock(AccountRepository.class);
+        AccountService accountService = new AccountService(accountRepository);
+
+        String email = "user@example.com";
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> accountService.register(email, null)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("password"));
+    }
 }
