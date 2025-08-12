@@ -80,4 +80,16 @@ public class AccountServiceIntegrationTest {
         );
         assertTrue(ex.getMessage().toLowerCase().contains("password"));
     }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenEmailHasInvalidFormat() {
+        String invalidEmail = "invalid-email-format";
+        String password = "secure123";
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> accountService.register(invalidEmail, password)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("email"));
+    }
 }
