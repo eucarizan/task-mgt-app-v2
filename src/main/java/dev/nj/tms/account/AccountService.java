@@ -1,6 +1,11 @@
 package dev.nj.tms.account;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class AccountService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
     private final AccountRepository accountRepository;
 
@@ -9,6 +14,7 @@ public class AccountService {
     }
 
     public Account register(String email, String password) {
+        logger.info("Attempting to register user with email: {}", email);
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -31,6 +37,8 @@ public class AccountService {
 
         Account account = new Account(email, password);
         accountRepository.save(account);
+
+        logger.info("Successfully registered user with email: {}", email);
         return account;
     }
 }

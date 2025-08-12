@@ -1,5 +1,8 @@
 package dev.nj.tms.account;
 
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/accounts")
 public class AccountController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
+
     private final AccountService accountService;
 
     public AccountController(AccountService accountService) {
@@ -17,8 +22,10 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
-        Account newAccount = accountService.register(account.email, account.password);
-        return ResponseEntity.ok(account);
+    public ResponseEntity<Account> createAccount(@Valid @RequestBody NewAccountDto newAccountDto) {
+        logger.info("Received request to create a new user with email: {}", newAccountDto.email());
+        Account newAccount = accountService.register(newAccountDto.email(), newAccountDto.password());
+        logger.info("Successfully registered user with email: {}", newAccountDto.email());
+        return ResponseEntity.ok(newAccount);
     }
 }

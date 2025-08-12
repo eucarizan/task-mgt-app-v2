@@ -1,5 +1,6 @@
 package dev.nj.tms.account;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,5 +42,17 @@ public class AccountControllerTest {
                         .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(email));
+    }
+
+    @Test
+    void shouldReturn400WhenEmailIsInvalid() throws Exception {
+        String invalidEmail = "invalid-email";
+        String password = "secure123";
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + invalidEmail + "\",\"password\":\"" + password + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").exists());
     }
 }
