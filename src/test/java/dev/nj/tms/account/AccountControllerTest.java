@@ -55,4 +55,19 @@ public class AccountControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.messages").exists());
     }
+
+    @Test
+    void shouldReturn409WhenEmailAlreadyExists() throws Exception {
+        String email = "user@email.com";
+        String password = "secure123";
+
+        when(accountService.register(any(), any()))
+                .thenThrow(new EmailAlreadyExistsException("Email already exists: " + email));
+
+        mockMvc.perform(post("/api/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\""))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").exists());
+    }
 }
