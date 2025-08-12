@@ -68,4 +68,16 @@ public class AccountServiceIntegrationTest {
         );
         assertTrue(ex.getMessage().toLowerCase().contains("email"));
     }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenPasswordIsTooShort() {
+        String email = "user3@example.com";
+        String shortPassword = "12345";
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> accountService.register(email, shortPassword)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("password"));
+    }
 }
