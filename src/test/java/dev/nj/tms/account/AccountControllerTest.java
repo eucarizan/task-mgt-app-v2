@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -83,5 +85,20 @@ public class AccountControllerTest {
                         .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    void shouldReturn400WithValidationErrorsWhenDtoValidationFails() throws Exception {
+        String invalidEmail = "not-an-email";
+        String shortPassword = "123";
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + invalidEmail + "\",\"password\":\"" + shortPassword + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages").value(hasSize(2)))
+                .andExpect(jsonPath("$.messages").value(hasItem("Incorrect email format")))
+                .andExpect(jsonPath("$.messages").value(hasItem("Password should be at least 6 characters")));
     }
 }

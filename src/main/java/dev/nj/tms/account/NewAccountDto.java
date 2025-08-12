@@ -10,7 +10,7 @@ public record NewAccountDto(
         String email,
 
         @NotBlank(message = "Password should not be blank")
-        @Size(min = 6, message = "Password should be atleast 6 characters")
+        @Size(min = 6, message = "Password should be at least 6 characters")
         String password
 ) {
 }
