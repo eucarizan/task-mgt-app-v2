@@ -92,4 +92,24 @@ public class AccountServiceIntegrationTest {
         );
         assertTrue(ex.getMessage().toLowerCase().contains("email"));
     }
+
+    @Test
+    void shouldCreateMultipleAccountsWithDifferentEmails() {
+        String email1 = "user4@example.com";
+        String email2 = "user5@example.com";
+        String password = "secure123";
+
+        Account account1 = accountService.register(email1, password);
+        Account account2 = accountService.register(email2, password);
+
+        assertNotNull(account1);
+        assertNotNull(account2);
+        assertEquals(email1, account1.getEmail());
+        assertEquals(email2, account2.getEmail());
+
+        assertThrows(EmailAlreadyExistsException.class, () ->
+                accountService.register(email1, password));
+        assertThrows(EmailAlreadyExistsException.class, () ->
+                accountService.register(email2, password));
+    }
 }
