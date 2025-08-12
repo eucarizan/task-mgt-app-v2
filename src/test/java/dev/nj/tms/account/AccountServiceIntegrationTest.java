@@ -57,4 +57,15 @@ public class AccountServiceIntegrationTest {
         assertThrows(EmailAlreadyExistsException.class, () ->
                 accountService.register(email, password));
     }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenEmailIsNull() {
+        String password = "secure123";
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> accountService.register(null, password)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("email"));
+    }
 }
