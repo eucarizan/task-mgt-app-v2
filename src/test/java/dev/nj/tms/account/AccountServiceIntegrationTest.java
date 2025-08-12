@@ -33,7 +33,7 @@ public class AccountServiceIntegrationTest {
 
     @Test
     void shouldSaveAndRetrieveAccountFromDatabase() {
-        String email = "user@example.com";
+        String email = "user1@example.com";
         String password = "secure123";
 
         Account savedAccount = accountService.register(email, password);
@@ -41,6 +41,18 @@ public class AccountServiceIntegrationTest {
         assertNotNull(savedAccount);
         assertEquals(email, savedAccount.getEmail());
         assertEquals(password, savedAccount.getPassword());
+
+        assertThrows(EmailAlreadyExistsException.class, () ->
+                accountService.register(email, password));
+    }
+
+    @Test
+    void shouldThrowEmailAlreadyExistsExceptionWhenEmailAlreadyExists() {
+        String email = "user2@example.com";
+        String password = "secure123";
+
+        Account firstAccount = accountService.register(email, password);
+        assertNotNull(firstAccount);
 
         assertThrows(EmailAlreadyExistsException.class, () ->
                 accountService.register(email, password));
