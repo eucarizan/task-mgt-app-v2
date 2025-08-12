@@ -1,14 +1,30 @@
 package dev.nj.tms.account;
 
-public class Account {
-    String email;
-    String password;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
-    public Account() {}
+@Entity
+public class Account {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String email;
+    private String password;
+
+    public Account() {
+    }
 
     public Account(String email, String password) {
         this.email = email;
         this.password = password;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getEmail() {
