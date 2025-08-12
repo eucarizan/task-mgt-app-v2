@@ -21,6 +21,10 @@ public class AccountService {
             throw new IllegalArgumentException("Password is required");
         }
 
+        if (password.length() < 6) {
+            throw new IllegalArgumentException("Password should be at least 6 characters");
+        }
+
         if (accountRepository.existsByEmailIgnoreCase(email)) {
             throw new EmailAlreadyExistsException("Email already exists: " + email);
         }
