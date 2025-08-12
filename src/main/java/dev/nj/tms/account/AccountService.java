@@ -9,8 +9,8 @@ public class AccountService {
     }
 
     public Account register(String email, String password) {
-        if (email == null) {
-            throw new IllegalArgumentException("Email cannot be null");
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
         }
 
         if (accountRepository.existsByEmailIgnoreCase(email)) {

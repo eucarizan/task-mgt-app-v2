@@ -2,8 +2,6 @@ package dev.nj.tms.account;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Locale;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -58,6 +56,20 @@ public class AccountServiceTest {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> accountService.register(null, password)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("email"));
+    }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenEmailIsBlank() {
+        AccountRepository accountRepository = mock(AccountRepository.class);
+        AccountService accountService = new AccountService(accountRepository);
+
+        String password = "secure123";
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> accountService.register("   ", password)
         );
         assertTrue(ex.getMessage().toLowerCase().contains("email"));
     }
