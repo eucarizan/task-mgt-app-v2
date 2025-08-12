@@ -101,4 +101,18 @@ public class AccountControllerTest {
                 .andExpect(jsonPath("$.messages").value(hasItem("Incorrect email format")))
                 .andExpect(jsonPath("$.messages").value(hasItem("Password should be at least 6 characters")));
     }
+
+    @Test
+    void shouldReturn400WhenServiceThrowsValidationFailsForNullEmail() throws Exception {
+        String password = "secure123";
+
+        when(accountService.register(any(), any()))
+                .thenThrow(new IllegalArgumentException("Email is required"));
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":null,\"password\":\"" + password + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").value(hasItem("Email should not be blank")));
+    }
 }
