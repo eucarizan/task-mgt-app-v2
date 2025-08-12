@@ -101,11 +101,22 @@ public class AccountControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenServiceThrowsValidationFailsForNullEmail() throws Exception {
-        NewAccountDto dto = new NewAccountDto(null, "secure123");
+    void shouldReturn400WhenServiceValidationFailsForNullEmail() throws Exception {
+        NewAccountDto dto = new NewAccountDto("user+tag@example.com", "secure123");
 
         when(accountService.register(any(), any()))
-                .thenThrow(new IllegalArgumentException("Email is required"));
+                .thenThrow(new IllegalArgumentException("Invalid email format"));
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid email format"));
+    }
+
+    @Test
+    void shouldReturn400WhenDtoValidationFailsForNullEmail() throws Exception {
+        NewAccountDto dto = new NewAccountDto(null, "secure123");
 
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
