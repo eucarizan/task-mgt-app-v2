@@ -157,4 +157,23 @@ public class AccountServiceTest {
         );
         assertTrue(ex.getMessage().toLowerCase().contains("password"));
     }
+
+    @Test
+    void shouldCreateUserWithMinimumValidPassword() {
+        AccountRepository accountRepository = mock(AccountRepository.class);
+        when(accountRepository.existsByEmailIgnoreCase(any())).thenReturn(false);
+        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AccountService accountService = new AccountService(accountRepository);
+
+        String email = "user@example.com";
+        String password = "123456";
+
+        Account account = accountService.register(email, password);
+
+        assertNotNull(account);
+        assertEquals(email, account.getEmail());
+        assertEquals(password, account.getPassword());
+        verify(accountRepository).save(any(Account.class));
+    }
 }
