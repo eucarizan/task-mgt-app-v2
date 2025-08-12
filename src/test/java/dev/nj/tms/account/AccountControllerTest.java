@@ -69,4 +69,19 @@ public class AccountControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").exists());
     }
+
+    @Test
+    void shouldReturn400WhenServiceThrowsIllegalArgumentException() throws Exception {
+        String email = "user+tag@example.com";
+        String password = "secure123";
+
+        when(accountService.register(any(), any()))
+                .thenThrow(new IllegalArgumentException("Invalid email format"));
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists());
+    }
 }
