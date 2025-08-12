@@ -17,7 +17,7 @@ public class AccountService {
             throw new IllegalArgumentException("Invalid email format");
         }
 
-        if (password == null) {
+        if (password == null || password.trim().isEmpty()) {
             throw new IllegalArgumentException("Password is required");
         }
 
