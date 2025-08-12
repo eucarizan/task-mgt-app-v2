@@ -73,4 +73,32 @@ public class AccountServiceTest {
         );
         assertTrue(ex.getMessage().toLowerCase().contains("email"));
     }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenEmailIsEmpty() {
+        AccountRepository accountRepository = mock(AccountRepository.class);
+        AccountService accountService = new AccountService(accountRepository);
+
+        String password = "secure123";
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> accountService.register("", password)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("email"));
+    }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenEmailHasInvalidFormat() {
+        AccountRepository accountRepository = mock(AccountRepository.class);
+        AccountService accountService = new AccountService(accountRepository);
+
+        String password = "secure123";
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> accountService.register("invalid-email", password)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("email"));
+    }
 }

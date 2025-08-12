@@ -13,6 +13,10 @@ public class AccountService {
             throw new IllegalArgumentException("Email is required");
         }
 
+        if (!email.matches("\\w+(\\.\\w+){0,2}@\\w+\\.\\w+")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+
         if (accountRepository.existsByEmailIgnoreCase(email)) {
             throw new EmailAlreadyExistsException("Email already exists: " + email);
         }
