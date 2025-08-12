@@ -1,6 +1,5 @@
 package dev.nj.tms.account;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +64,8 @@ public class AccountControllerTest {
                 .thenThrow(new EmailAlreadyExistsException("Email already exists: " + email));
 
         mockMvc.perform(post("/api/accounts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\""))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").exists());
     }
