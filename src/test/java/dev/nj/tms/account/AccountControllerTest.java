@@ -1,5 +1,6 @@
 package dev.nj.tms.account;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,66 +36,63 @@ public class AccountControllerTest {
         String email = "user@email.com";
         String password = "secure123";
 
+        NewAccountDto dto = new NewAccountDto(email, password);
         Account account = new Account(email, password);
         when(accountService.register(any(), any())).thenReturn(account);
 
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
+                        .content(asJsonString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(email));
     }
 
     @Test
     void shouldReturn400WhenEmailIsInvalid() throws Exception {
-        String invalidEmail = "invalid-email";
-        String password = "secure123";
+        NewAccountDto dto = new NewAccountDto("invalid-email", "secure123");
 
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + invalidEmail + "\",\"password\":\"" + password + "\"}"))
+                        .content(asJsonString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.messages").exists());
     }
 
     @Test
     void shouldReturn409WhenEmailAlreadyExists() throws Exception {
-        String email = "user@email.com";
-        String password = "secure123";
+        NewAccountDto dto = new NewAccountDto("user@email.com", "secure123");
 
         when(accountService.register(any(), any()))
-                .thenThrow(new EmailAlreadyExistsException("Email already exists: " + email));
+                .thenThrow(new EmailAlreadyExistsException("Email already exists: " + dto.email()));
 
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
+                        .content(asJsonString(dto)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").exists());
     }
 
     @Test
     void shouldReturn400WhenServiceThrowsIllegalArgumentException() throws Exception {
-        String email = "user+tag@example.com";
-        String password = "secure123";
+        NewAccountDto dto = new NewAccountDto("user+tag@example.com", "secure123");
 
         when(accountService.register(any(), any()))
                 .thenThrow(new IllegalArgumentException("Invalid email format"));
 
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
+                        .content(asJsonString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists());
     }
 
     @Test
     void shouldReturn400WithValidationErrorsWhenDtoValidationFails() throws Exception {
-        String invalidEmail = "not-an-email";
-        String shortPassword = "123";
+        NewAccountDto dto = new NewAccountDto("not-an-email", "123");
 
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + invalidEmail + "\",\"password\":\"" + shortPassword + "\"}"))
+                        .content(asJsonString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.messages").isArray())
                 .andExpect(jsonPath("$.messages").value(hasSize(2)))
@@ -104,15 +102,32 @@ public class AccountControllerTest {
 
     @Test
     void shouldReturn400WhenServiceThrowsValidationFailsForNullEmail() throws Exception {
-        String password = "secure123";
+        NewAccountDto dto = new NewAccountDto(null, "secure123");
 
         when(accountService.register(any(), any()))
                 .thenThrow(new IllegalArgumentException("Email is required"));
 
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":null,\"password\":\"" + password + "\"}"))
+                        .content(asJsonString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.messages").value(hasItem("Email should not be blank")));
+    }
+
+    @Test
+    void shouldReturn500WhenDatabaseOperationFails() throws Exception {
+        NewAccountDto dto = new NewAccountDto("user@example.com", "secure123");
+
+        when(accountService.register(any(), any()))
+                .thenThrow(new RuntimeException("Database connection failed"));
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    private static String asJsonString(final Object obj) throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(obj);
     }
 }
