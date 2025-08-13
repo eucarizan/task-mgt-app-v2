@@ -90,4 +90,17 @@ public class AccountControllerIntegrationTest {
                 .andExpect(jsonPath("$.messages").value(hasItem("Password should be at least 6 characters")));
     }
 
+    @Test
+    void shouldReturn400WhenServiceValidationFailsInRealDatabase() throws Exception {
+        String email = "user+tag@example.com";
+        String password = "secure123";
+
+        NewAccountDto dto = new NewAccountDto(email, password);
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists());
+    }
 }
