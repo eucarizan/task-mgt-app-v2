@@ -52,4 +52,23 @@ public class AccountControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").exists());
     }
 
+    @Test
+    void shouldReturn409WhenEmailAlreadyExistsInRealDatabase() throws Exception {
+        String email = "user7@example.com";
+        String password = "secure123";
+
+        NewAccountDto dto = new NewAccountDto(email, password);
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").exists());
+    }
+
 }
