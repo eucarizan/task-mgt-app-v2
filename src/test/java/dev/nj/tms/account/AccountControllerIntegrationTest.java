@@ -103,4 +103,38 @@ public class AccountControllerIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists());
     }
+
+    @Test
+    void shouldCreateMultipleAccountsWIthDifferentEmailsInRealDatabase() throws Exception {
+        String email1 = "user8@example.com";
+        String email2 = "user9@example.com";
+        String password = "secure123";
+
+        NewAccountDto dto1 = new NewAccountDto(email1, password);
+        NewAccountDto dto2 = new NewAccountDto(email2, password);
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(email1))
+                .andExpect(jsonPath("$.id").exists());
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto2)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(email2))
+                .andExpect(jsonPath("$.id").exists());
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto1)))
+                .andExpect(status().isConflict());
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto2)))
+                .andExpect(status().isConflict());
+    }
 }
