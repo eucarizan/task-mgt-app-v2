@@ -14,6 +14,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static dev.nj.tms.account.AccountControllerTest.asJsonString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -69,6 +71,23 @@ public class AccountControllerIntegrationTest {
                         .content(asJsonString(dto)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    void shouldReturn400WhenDtoValidationFailsInRealDatabase() throws Exception {
+        String invalidEmail = "not-an-email";
+        String shortPassword = "123";
+
+        NewAccountDto dto = new NewAccountDto(invalidEmail, shortPassword);
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages").value(hasSize(2)))
+                .andExpect(jsonPath("$.messages").value(hasItem("Incorrect email format")))
+                .andExpect(jsonPath("$.messages").value(hasItem("Password should be at least 6 characters")));
     }
 
 }
