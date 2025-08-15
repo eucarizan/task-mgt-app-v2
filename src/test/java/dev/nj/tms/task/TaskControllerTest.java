@@ -3,6 +3,7 @@ package dev.nj.tms.task;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,5 +23,12 @@ public class TaskControllerTest {
     void shouldReturn401WhenNoAuthenticationProvided() throws Exception {
         mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenGettingTasksWithMockUser() throws Exception {
+        mockMvc.perform(get("/api/tasks"))
+                .andExpect(status().isOk());
     }
 }
