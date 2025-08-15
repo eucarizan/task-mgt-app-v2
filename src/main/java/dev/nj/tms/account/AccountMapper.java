@@ -1,6 +1,5 @@
-package dev.nj.tms.config;
+package dev.nj.tms.account;
 
-import dev.nj.tms.account.Account;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 

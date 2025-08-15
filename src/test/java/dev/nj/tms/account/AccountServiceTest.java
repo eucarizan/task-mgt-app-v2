@@ -1,6 +1,5 @@
 package dev.nj.tms.account;
 
-import dev.nj.tms.config.AccountMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,7 +20,7 @@ public class AccountServiceTest {
 
         when(accountRepository.save(any(Account.class))).thenReturn(mockAccount);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String email = "user@example.com";
         String password = "secure123";
@@ -42,7 +41,7 @@ public class AccountServiceTest {
 
         when(accountRepository.existsByEmailIgnoreCase(any())).thenReturn(true);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String email = "User@Example.com";
         String password = "secure123";
@@ -61,7 +60,7 @@ public class AccountServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String password = "secure123";
 
@@ -77,7 +76,7 @@ public class AccountServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String password = "secure123";
 
@@ -93,7 +92,7 @@ public class AccountServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String password = "secure123";
 
@@ -109,7 +108,7 @@ public class AccountServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String password = "secure123";
 
@@ -125,7 +124,7 @@ public class AccountServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String email = "user@example.com";
 
@@ -141,7 +140,7 @@ public class AccountServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String email = "user@example.com";
 
@@ -157,7 +156,7 @@ public class AccountServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String email = "user@example.com";
 
@@ -173,7 +172,7 @@ public class AccountServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String email = "user@example.com";
 
@@ -196,7 +195,7 @@ public class AccountServiceTest {
 
         when(accountRepository.save(any(Account.class))).thenReturn(mockAccount);
 
-        AccountService accountService = new AccountService(accountRepository, accountMapper);
+        AccountService accountService = new AccountServiceImpl(accountRepository, accountMapper);
 
         String email = "user@example.com";
         String password = "123456";
