@@ -40,7 +40,8 @@ public class AccountServiceIntegrationTest {
 
         assertNotNull(savedAccount);
         assertEquals(email, savedAccount.getEmail());
-        assertEquals(password, savedAccount.getPassword());
+        assertNotNull(savedAccount.getPassword());
+        assertNotEquals(password, savedAccount.getPassword());
 
         assertThrows(EmailAlreadyExistsException.class, () ->
                 accountService.register(email, password));
