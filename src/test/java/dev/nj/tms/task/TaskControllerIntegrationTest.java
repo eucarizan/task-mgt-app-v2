@@ -58,4 +58,14 @@ public class TaskControllerIntegrationTest {
                 .with(httpBasic(email, password)))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void shouldReturn401WhenAuthenticatingWithNonExistingUser() throws Exception {
+        String email = "nonexistent@example.com";
+        String password = "wrongpassword";
+
+        mockMvc.perform(get("/api/tasks")
+                        .with(httpBasic(email, password)))
+                .andExpect(status().isUnauthorized());
+    }
 }
