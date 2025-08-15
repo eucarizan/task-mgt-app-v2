@@ -15,7 +15,11 @@ public class AccountServiceTest {
         AccountMapper accountMapper = mock(AccountMapper.class);
 
         when(accountRepository.existsByEmailIgnoreCase(any())).thenReturn(false);
-        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Account mockAccount = new Account("user@example.com", "secure123");
+        when(accountMapper.toEntity(any(), any())).thenReturn(mockAccount);
+
+        when(accountRepository.save(any(Account.class))).thenReturn(mockAccount);
 
         AccountService accountService = new AccountService(accountRepository, accountMapper);
 
@@ -28,6 +32,7 @@ public class AccountServiceTest {
         assertEquals(email, account.getEmail());
         assertNotNull(account.getPassword());
         verify(accountRepository).save(any(Account.class));
+        verify(accountMapper).toEntity(email, password);
     }
 
     @Test
@@ -185,7 +190,11 @@ public class AccountServiceTest {
         AccountMapper accountMapper = mock(AccountMapper.class);
 
         when(accountRepository.existsByEmailIgnoreCase(any())).thenReturn(false);
-        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Account mockAccount = new Account("user@example.com", "123456");
+        when(accountMapper.toEntity(any(), any())).thenReturn(mockAccount);
+
+        when(accountRepository.save(any(Account.class))).thenReturn(mockAccount);
 
         AccountService accountService = new AccountService(accountRepository, accountMapper);
 
@@ -198,5 +207,6 @@ public class AccountServiceTest {
         assertEquals(email, account.getEmail());
         assertEquals(password, account.getPassword());
         verify(accountRepository).save(any(Account.class));
+        verify(accountMapper).toEntity(email, password);
     }
 }
