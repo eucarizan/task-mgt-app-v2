@@ -4,6 +4,7 @@ import dev.nj.tms.account.NewAccountDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
+@AutoConfigureMockMvc
 public class TaskControllerIntegrationTest {
 
     @Container
@@ -64,6 +66,25 @@ public class TaskControllerIntegrationTest {
 
         mockMvc.perform(get("/api/tasks")
                         .with(httpBasic(email, password)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldReturn401WhenAuthenticatingWithWrongPassword() throws Exception {
+        String email = "testuser2@example.com";
+        String password = "correctpassword123";
+
+        NewAccountDto dto = new NewAccountDto(email, password);
+
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isOk());
+
+        String wrongPassword = "wrongpassword123";
+
+        mockMvc.perform(get("/api/tasks")
+                        .with(httpBasic(email, wrongPassword)))
                 .andExpect(status().isUnauthorized());
     }
 }
