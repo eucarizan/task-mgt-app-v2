@@ -4,7 +4,6 @@ import dev.nj.tms.account.NewAccountDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -16,14 +15,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static dev.nj.tms.TestUtils.asJsonString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-@AutoConfigureMockMvc(addFilters = false)
 public class TaskControllerIntegrationTest {
 
     @Container
@@ -55,7 +53,7 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/tasks")
-                .with(httpBasic(email, password)))
+                        .with(httpBasic(email, password)))
                 .andExpect(status().isOk());
     }
 
