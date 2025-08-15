@@ -37,12 +37,6 @@ public class TaskControllerTest {
     private AccountRepository accountRepository;
 
     @Test
-    void shouldReturn401WhenNoAuthenticationProvided() throws Exception {
-        mockMvc.perform(get("/api/tasks"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
     @WithMockUser
     void shouldReturn200WhenGettingTasksWithMockUser() throws Exception {
         mockMvc.perform(get("/api/tasks"))
@@ -61,5 +55,21 @@ public class TaskControllerTest {
         mockMvc.perform(get("/api/tasks")
                         .with(httpBasic(email, password)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldReturn401WhenNoAuthenticationProvided() throws Exception {
+        mockMvc.perform(get("/api/tasks"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldReturn401WhenGettingTasksWithInvalidCredentials() throws Exception {
+        String email = "testuser@example.com";
+        String wrongPassword = "wrongpassword";
+
+        mockMvc.perform(get("/api/tasks")
+                        .with(httpBasic(email, wrongPassword)))
+                .andExpect(status().isUnauthorized());
     }
 }
