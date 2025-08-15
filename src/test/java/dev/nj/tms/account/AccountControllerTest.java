@@ -1,7 +1,5 @@
 package dev.nj.tms.account;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -10,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static dev.nj.tms.TestUtils.asJsonString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,9 +26,6 @@ public class AccountControllerTest {
 
     @MockitoBean
     private AccountService accountService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     void shouldReturn200WhenCreatingValidAccount() throws Exception {
@@ -136,9 +132,5 @@ public class AccountControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(dto)))
                 .andExpect(status().isInternalServerError());
-    }
-
-    static String asJsonString(final Object obj) throws JsonProcessingException {
-        return new ObjectMapper().writeValueAsString(obj);
     }
 }
