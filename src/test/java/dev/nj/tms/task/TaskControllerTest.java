@@ -20,9 +20,8 @@ public class TaskControllerTest {
     private TaskService taskService;
 
     @Test
-    void shouldReturn200WhenAuthenticatedUserRequestsTasks() throws Exception {
-        mockMvc.perform(get("/api/tasks")
-                        .with(httpBasic("user", "password")))
-                .andExpect(status().isOk());
+    void shouldReturn401WhenNoAuthenticationProvided() throws Exception {
+        mockMvc.perform(get("/api/tasks"))
+                .andExpect(status().isUnauthorized());
     }
 }
