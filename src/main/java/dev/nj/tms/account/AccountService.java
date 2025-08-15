@@ -1,5 +1,6 @@
 package dev.nj.tms.account;
 
+import dev.nj.tms.config.AccountMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -10,9 +11,11 @@ public class AccountService {
     private static final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
     private final AccountRepository accountRepository;
+    private final AccountMapper accountMapper;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper) {
         this.accountRepository = accountRepository;
+        this.accountMapper = accountMapper;
     }
 
     public Account register(String email, String password) {
@@ -37,7 +40,7 @@ public class AccountService {
             throw new EmailAlreadyExistsException("Email already exists: " + email);
         }
 
-        Account account = new Account(email, password);
+        Account account = accountMapper.toEntity(email, password);
         accountRepository.save(account);
 
         logger.info("Successfully registered user with email: {}", email);

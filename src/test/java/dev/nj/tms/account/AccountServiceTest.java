@@ -1,5 +1,6 @@
 package dev.nj.tms.account;
 
+import dev.nj.tms.config.AccountMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,10 +12,12 @@ public class AccountServiceTest {
     @Test
     void shouldCreateNewUserWithValidEmailAndPassword() {
         AccountRepository accountRepository = mock(AccountRepository.class);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
         when(accountRepository.existsByEmailIgnoreCase(any())).thenReturn(false);
         when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AccountService accountService = new AccountService(accountRepository);
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String email = "user@example.com";
         String password = "secure123";
@@ -30,9 +33,11 @@ public class AccountServiceTest {
     @Test
     void shouldThrowConflictWhenEmailAlreadyExistsIgnoringCase() {
         AccountRepository accountRepository = mock(AccountRepository.class);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
         when(accountRepository.existsByEmailIgnoreCase(any())).thenReturn(true);
 
-        AccountService accountService = new AccountService(accountRepository);
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String email = "User@Example.com";
         String password = "secure123";
@@ -49,7 +54,9 @@ public class AccountServiceTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenEmailIsNull() {
         AccountRepository accountRepository = mock(AccountRepository.class);
-        AccountService accountService = new AccountService(accountRepository);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String password = "secure123";
 
@@ -63,7 +70,9 @@ public class AccountServiceTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenEmailIsBlank() {
         AccountRepository accountRepository = mock(AccountRepository.class);
-        AccountService accountService = new AccountService(accountRepository);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String password = "secure123";
 
@@ -77,7 +86,9 @@ public class AccountServiceTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenEmailIsEmpty() {
         AccountRepository accountRepository = mock(AccountRepository.class);
-        AccountService accountService = new AccountService(accountRepository);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String password = "secure123";
 
@@ -91,7 +102,9 @@ public class AccountServiceTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenEmailHasInvalidFormat() {
         AccountRepository accountRepository = mock(AccountRepository.class);
-        AccountService accountService = new AccountService(accountRepository);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String password = "secure123";
 
@@ -105,7 +118,9 @@ public class AccountServiceTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenPasswordIsNull() {
         AccountRepository accountRepository = mock(AccountRepository.class);
-        AccountService accountService = new AccountService(accountRepository);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String email = "user@example.com";
 
@@ -119,7 +134,9 @@ public class AccountServiceTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenPasswordIsBlank() {
         AccountRepository accountRepository = mock(AccountRepository.class);
-        AccountService accountService = new AccountService(accountRepository);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String email = "user@example.com";
 
@@ -133,7 +150,9 @@ public class AccountServiceTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenPasswordIsEmpty() {
         AccountRepository accountRepository = mock(AccountRepository.class);
-        AccountService accountService = new AccountService(accountRepository);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String email = "user@example.com";
 
@@ -147,7 +166,9 @@ public class AccountServiceTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenPasswordIsTooShort() {
         AccountRepository accountRepository = mock(AccountRepository.class);
-        AccountService accountService = new AccountService(accountRepository);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String email = "user@example.com";
 
@@ -161,10 +182,12 @@ public class AccountServiceTest {
     @Test
     void shouldCreateUserWithMinimumValidPassword() {
         AccountRepository accountRepository = mock(AccountRepository.class);
+        AccountMapper accountMapper = mock(AccountMapper.class);
+
         when(accountRepository.existsByEmailIgnoreCase(any())).thenReturn(false);
         when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AccountService accountService = new AccountService(accountRepository);
+        AccountService accountService = new AccountService(accountRepository, accountMapper);
 
         String email = "user@example.com";
         String password = "123456";
