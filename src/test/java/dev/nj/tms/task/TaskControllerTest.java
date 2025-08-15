@@ -1,23 +1,40 @@
 package dev.nj.tms.task;
 
+import dev.nj.tms.account.Account;
+import dev.nj.tms.account.AccountRepository;
+import dev.nj.tms.account.CustomUserDetailsService;
+import dev.nj.tms.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TaskController.class)
+@Import({SecurityConfig.class, CustomUserDetailsService.class})
 public class TaskControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     @MockitoBean
     private TaskService taskService;
+
+    @MockitoBean
+    private AccountRepository accountRepository;
 
     @Test
     void shouldReturn401WhenNoAuthenticationProvided() throws Exception {
@@ -29,6 +46,20 @@ public class TaskControllerTest {
     @WithMockUser
     void shouldReturn200WhenGettingTasksWithMockUser() throws Exception {
         mockMvc.perform(get("/api/tasks"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldReturn200WhenGettingTaskWithValidBasicAuth() throws Exception {
+        String email = "testuser@example.com";
+        String password = "testpass123";
+
+        Account mockAccount = new Account(email, passwordEncoder.encode(password));
+        when(accountRepository.findByEmailIgnoreCase(email))
+                .thenReturn(Optional.of(mockAccount));
+
+        mockMvc.perform(get("/api/tasks")
+                        .with(httpBasic(email, password)))
                 .andExpect(status().isOk());
     }
 }
