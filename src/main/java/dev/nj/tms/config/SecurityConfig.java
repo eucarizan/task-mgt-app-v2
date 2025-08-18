@@ -22,7 +22,9 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/shutdown").permitAll()
                         .requestMatchers("/h2-console").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/accounts").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/tasks").authenticated())
+                        .requestMatchers(HttpMethod.GET, "/api/tasks").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/tasks").authenticated()
+                )
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(Customizer.withDefaults());
 
