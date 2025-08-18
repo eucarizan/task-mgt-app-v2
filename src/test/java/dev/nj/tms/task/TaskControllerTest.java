@@ -122,4 +122,14 @@ public class TaskControllerTest {
                 .andExpect(jsonPath("$.messages").isArray())
                 .andExpect(jsonPath("$.messages", hasItem("description should not be blank")));
     }
+
+    @Test
+    void shouldReturn400WhenCreatingTaskWithoutAuth() throws Exception {
+        CreateTaskRequest dto = new CreateTaskRequest("My Task", "Do something");
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isUnauthorized());
+    }
 }
