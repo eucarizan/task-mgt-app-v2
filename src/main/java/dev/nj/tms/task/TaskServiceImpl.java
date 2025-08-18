@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Locale;
-
 @Service
 public class TaskServiceImpl implements TaskService {
 
@@ -23,9 +21,10 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskResponse createTask(String title, String description, String author) {
-        logger.info("Attempting to create a task by: {}", author);
-        Task task = taskRepository.save(new Task(title, description, author.toLowerCase(Locale.ROOT)));
-        logger.info("Successfully create a task by: {}", author);
-        return new TaskResponse(task.getId().toString(), task.getTitle(), task.getDescription(), task.getStatus().toString(), task.getAuthor());
+        logger.debug("Attempting to create a task by: {}", author);
+        Task task = taskRepository.save(new Task(title, description, author));
+        TaskResponse response = new TaskResponse(task.getId().toString(), task.getTitle(), task.getDescription(), task.getStatus().toString(), task.getAuthor());
+        logger.debug("Successfully create a task with id {} by: {}", response.id(), author);
+        return response;
     }
 }
