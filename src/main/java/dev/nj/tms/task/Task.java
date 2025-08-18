@@ -10,15 +10,42 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
+
+    private String title;
+
+    private String description;
+
+    private TaskStatus status;
+
+    private String author;
 
     public Task() {}
 
-    public Task(Long id) {
-        this.id = id;
+    public Task(String title, String description, String author) {
+        this.title = title;
+        this.description = description;
+        this.status = TaskStatus.CREATED;
+        this.author = author;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    public String getAuthor() {
+        return author;
     }
 }

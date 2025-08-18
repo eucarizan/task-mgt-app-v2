@@ -36,7 +36,7 @@ public class TaskControllerTest {
     PasswordEncoder passwordEncoder;
 
     @MockitoBean
-    private TaskService taskService;
+    private TaskServiceImpl taskService;
 
     @MockitoBean
     private AccountRepository accountRepository;
