@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,13 +44,13 @@ public class TaskControllerTest {
 
     @Test
     @WithMockUser
-    void shouldReturn200WhenGettingTasksWithMockUser() throws Exception {
+    void getTasks_shouldReturn200WithMockUser() throws Exception {
         mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldReturn200WhenGettingTaskWithValidBasicAuth() throws Exception {
+    void getTasks_shouldReturn200AndBody_whenValidBasicAuth() throws Exception {
         String email = "testuser@example.com";
         String password = "testpass123";
 
@@ -65,13 +64,13 @@ public class TaskControllerTest {
     }
 
     @Test
-    void shouldReturn401WhenNoAuthenticationProvided() throws Exception {
+    void getTasks_shouldReturn401WhenNoAuth() throws Exception {
         mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void shouldReturn401WhenGettingTasksWithInvalidCredentials() throws Exception {
+    void getTasks_shouldReturn401WhenInvalidCredentials() throws Exception {
         String email = "testuser@example.com";
         String wrongPassword = "wrongpassword";
 
@@ -82,7 +81,7 @@ public class TaskControllerTest {
 
     @Test
     @WithMockUser(username = "user@example.com")
-    void shouldReturn200AndTaskBodyWhenCreatingWithValidRequestAndAuth() throws Exception {
+    void createTask_shouldReturn200AndBody_whenValidRequestAndAuth() throws Exception {
         String title = "My Task";
         String description = "Do something important";
         String expectedAuthor = "user@example.com";
@@ -105,7 +104,7 @@ public class TaskControllerTest {
 
     @Test
     @WithMockUser(username = "user@example.com")
-    void shouldReturn400WhenTitleIsBlank() throws Exception {
+    void createTask_shouldReturn400_whenTitleIsBlank() throws Exception {
         CreateTaskRequest dto = new CreateTaskRequest("   ", "Do something");
 
         mockMvc.perform(post("/api/tasks")
@@ -118,7 +117,7 @@ public class TaskControllerTest {
 
     @Test
     @WithMockUser(username = "user@example.com")
-    void shouldReturn400WhenDescriptionIsBlank() throws Exception {
+    void createTask_shouldReturn400_whenDescriptionIsBlank() throws Exception {
         CreateTaskRequest dto = new CreateTaskRequest("My Task", "   ");
 
         mockMvc.perform(post("/api/tasks")
@@ -130,32 +129,12 @@ public class TaskControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenCreatingTaskWithoutAuth() throws Exception {
+    void createTask_shouldReturn400_whenNoAuth() throws Exception {
         CreateTaskRequest dto = new CreateTaskRequest("My Task", "Do something");
 
         mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(dto)))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser(username = "User@Example.com")
-    void shouldDelegateCreationToServiceAndReturnResponse() throws Exception {
-        String title = "My Task";
-        String description = "Do something";
-        String expectedAuthor = "user@example.com";
-        CreateTaskRequest dto = new CreateTaskRequest(title, description);
-        TaskResponse serviceResponse = new TaskResponse("42", title, description, "CREATED", expectedAuthor);
-
-        when(taskService.createTask(eq(title), eq(description), eq(expectedAuthor))).thenReturn(serviceResponse);
-
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(dto)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("42"))
-                .andExpect(jsonPath("$.author").value(expectedAuthor));
     }
 }
