@@ -109,4 +109,17 @@ public class TaskControllerTest {
                 .andExpect(jsonPath("$.messages").isArray())
                 .andExpect(jsonPath("$.messages", hasItem("title should not be blank")));
     }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void shouldReturn400WhenDescriptionIsBlank() throws Exception {
+        CreateTaskRequest dto = new CreateTaskRequest("My Task", "   ");
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("description should not be blank")));
+    }
 }
