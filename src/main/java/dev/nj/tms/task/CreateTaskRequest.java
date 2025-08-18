@@ -3,10 +3,10 @@ package dev.nj.tms.task;
 import jakarta.validation.constraints.NotBlank;
 
 public record CreateTaskRequest(
-        @NotBlank
+        @NotBlank(message = "title should not be blank")
         String title,
 
-        @NotBlank
+        @NotBlank(message = "description should not be blank")
         String description
 ) {
 }

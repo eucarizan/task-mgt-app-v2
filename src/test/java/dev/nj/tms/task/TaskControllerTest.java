@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 
 import static dev.nj.tms.TestUtils.asJsonString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -94,5 +95,18 @@ public class TaskControllerTest {
                 .andExpect(jsonPath("$.description").value(description))
                 .andExpect(jsonPath("$.status").value("CREATED"))
                 .andExpect(jsonPath("$.author").value("user@example.com"));
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void shouldReturn400WhenTitleIsBlank() throws Exception {
+        CreateTaskRequest dto = new CreateTaskRequest("   ", "Do something");
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("title should not be blank")));
     }
 }
