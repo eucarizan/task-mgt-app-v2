@@ -85,8 +85,12 @@ public class TaskControllerTest {
     void shouldReturn200AndTaskBodyWhenCreatingWithValidRequestAndAuth() throws Exception {
         String title = "My Task";
         String description = "Do something important";
+        String expectedAuthor = "user@example.com";
 
         CreateTaskRequest dto = new CreateTaskRequest(title, description);
+        TaskResponse serviceResponse = new TaskResponse("42", title, description, "CREATED", expectedAuthor);
+
+        when(taskService.createTask(eq(title), eq(description), eq(expectedAuthor))).thenReturn(serviceResponse);
 
         mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
