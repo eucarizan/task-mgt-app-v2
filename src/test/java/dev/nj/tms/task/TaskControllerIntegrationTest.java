@@ -43,7 +43,7 @@ public class TaskControllerIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldReturn200WhenAuthenticatedWIthRealRegisteredUser() throws Exception {
+    void getTasks_shouldReturn200WhenAuthenticatedWithRealRegisteredUser() throws Exception {
         String email = "testuser@example.com";
         String password = "testpass123";
 
@@ -60,7 +60,7 @@ public class TaskControllerIntegrationTest {
     }
 
     @Test
-    void shouldReturn401WhenAuthenticatingWithNonExistingUser() throws Exception {
+    void getTasks_shouldReturn401WhenAuthenticatingWithNonExistingUser() throws Exception {
         String email = "nonexistent@example.com";
         String password = "wrongpassword";
 
@@ -70,7 +70,7 @@ public class TaskControllerIntegrationTest {
     }
 
     @Test
-    void shouldReturn401WhenAuthenticatingWithWrongPassword() throws Exception {
+    void getTasks_shouldReturn401WhenAuthenticatingWithWrongPassword() throws Exception {
         String email = "testuser2@example.com";
         String password = "correctpassword123";
 
