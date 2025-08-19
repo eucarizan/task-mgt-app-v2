@@ -10,7 +10,7 @@ import static org.mockito.Mockito.*;
 public class TaskServiceTest {
 
     @Test
-    void shouldCreateTaskWithStatusCreatedAndLowercasedAuthor() {
+    void createTask_shouldReturnStatusCreatedAndLowercasedAuthor() {
         TaskRepository taskRepository = mock(TaskRepository.class);
 
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> {
