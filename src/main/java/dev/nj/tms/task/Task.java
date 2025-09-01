@@ -1,9 +1,9 @@
 package dev.nj.tms.task;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 public class Task {
@@ -20,6 +20,10 @@ public class Task {
 
     private String author;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonIgnore
+    private LocalDateTime created;
+
     public Task() {}
 
     public Task(String title, String description, String author) {
@@ -27,6 +31,7 @@ public class Task {
         this.description = description;
         this.status = TaskStatus.CREATED;
         this.author = author;
+        this.created = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -47,5 +52,9 @@ public class Task {
 
     public String getAuthor() {
         return author;
+    }
+
+    public LocalDateTime getCreated() {
+        return created;
     }
 }

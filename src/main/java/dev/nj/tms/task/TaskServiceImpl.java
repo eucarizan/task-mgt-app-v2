@@ -2,6 +2,7 @@ package dev.nj.tms.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,14 @@ public class TaskServiceImpl implements TaskService {
         logger.debug("Attempting to list tasks");
         List<TaskResponse> tasks = taskRepository.findAll().stream().map(taskMapper::toResponse).toList();
         logger.debug("Successfully list tasks: {}", tasks.size());
+        return tasks;
+    }
+
+    @Override
+    public List<TaskResponse> getTasksByAuthor(String author) {
+        logger.debug("Attempting to list tasks by author: {}", author);
+        List<TaskResponse> tasks = taskRepository.findAllByAuthorIgnoreCase(author, Sort.by(Sort.Direction.DESC, "created")).stream().map(taskMapper::toResponse).toList();
+        logger.debug("Successfully list tasks by author: {}", author);
         return tasks;
     }
 

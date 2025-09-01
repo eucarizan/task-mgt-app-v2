@@ -6,6 +6,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -48,6 +49,24 @@ public class TaskServiceTest {
         assertEquals(1, user2Count);
         verify(taskRepository).findAll();
         verify(taskMapper, times(3)).toResponse(any(Task.class));
+    }
+
+    @Test
+    void getTasks_filterBySelf_whenAuthorIsCurrentUser() {
+        Task t1 = new Task("T1", "D1", "user1@mail.com");
+        Task t2 = new Task("T2", "D2", "user1@mail.com");
+
+        when(taskRepository.findAllByAuthorIgnoreCase(any(String.class), any(Sort.class))).thenReturn(List.of(t1, t2));
+        when(taskMapper.toResponse(t1)).thenReturn(new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com"));
+        when(taskMapper.toResponse(t2)).thenReturn(new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com"));
+
+        var responses = taskService.getTasksByAuthor("user1@mail.com");
+
+        assertEquals(2, responses.size());
+        long user1Count = responses.stream().filter(r -> "user1@mail.com".equals(r.author())).count();
+        assertEquals(2, user1Count);
+        verify(taskRepository).findAllByAuthorIgnoreCase(any(String.class), any(Sort.class));
+        verify(taskMapper, times(2)).toResponse(any(Task.class));
     }
 
     @Test
