@@ -70,6 +70,22 @@ public class TaskServiceTest {
     }
 
     @Test
+    void getTasks_filterByOtherUser_whenAuthorIsOther() {
+        Task t3 = new Task("T3", "D3", "user2@mail.com");
+
+        when(taskRepository.findAllByAuthorIgnoreCase(any(String.class), any(Sort.class))).thenReturn(List.of(t3));
+        when(taskMapper.toResponse(t3)).thenReturn(new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com"));
+
+        var responses = taskService.getTasksByAuthor("user2@mail.com");
+
+        assertEquals(1, responses.size());
+        long user2Count = responses.stream().filter(r -> "user2@mail.com".equals(r.author())).count();
+        assertEquals(1, user2Count);
+        verify(taskRepository).findAllByAuthorIgnoreCase(any(String.class), any(Sort.class));
+        verify(taskMapper, times(1)).toResponse(any(Task.class));
+    }
+
+    @Test
     void createTask_shouldReturnStatusCreatedAndLowercasedAuthor() {
         String title = "My Task";
         String description = "Do something important";
