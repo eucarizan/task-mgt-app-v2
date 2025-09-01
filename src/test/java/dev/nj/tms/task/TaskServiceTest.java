@@ -86,6 +86,15 @@ public class TaskServiceTest {
     }
 
     @Test
+    void getTasks_returnsEmpty_whenUnknownAuthor() {
+        when(taskRepository.findAllByAuthorIgnoreCase(any(String.class), any(Sort.class))).thenReturn(List.of());
+
+        var responses = taskService.getTasksByAuthor("unknown");
+
+        assertEquals(0, responses.size());
+    }
+
+    @Test
     void createTask_shouldReturnStatusCreatedAndLowercasedAuthor() {
         String title = "My Task";
         String description = "Do something important";
