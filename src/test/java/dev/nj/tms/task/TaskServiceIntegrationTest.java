@@ -77,7 +77,21 @@ public class TaskServiceIntegrationTest {
     }
 
     @Test
-    void createTask_persistsAndReturnResponse() {
+    void it_filterSelf_user1SeesTwo() {
+        Task task1 = new Task("T1", "D1", "user1@mail.com");
+        Task task2 = new Task("T2", "D2", "user1@mail.com");
+        Task task3 = new Task("T3", "D3", "user2@mail.com");
+
+        taskRepository.saveAll(List.of(task1, task2, task3));
+
+        List<TaskResponse> tasks = taskService.getTasksByAuthor("user1@mail.com");
+
+        assertEquals(2, tasks.size());
+        assertEquals(2, tasks.stream().filter(task -> "user1@mail.com".equalsIgnoreCase(task.author())).count());
+    }
+
+    @Test
+    void it_createTask_persistsAndReturnResponse() {
         String title = "Integration task";
         String description = "Persist me";
         String author = "it_user@example.com";
