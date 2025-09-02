@@ -13,8 +13,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -116,6 +115,30 @@ public class TaskServiceIntegrationTest {
         List<TaskResponse> tasks = taskService.getTasksByAuthor("test@mail.com");
 
         assertEquals(0, tasks.size());
+    }
+
+    @Test
+    void it_invalidAuthor_throws() {
+        String[] invalidAuthors = {
+                "not-an-email",
+                "missingdomain@",
+                "@missingusername",
+                "invalid@domain",
+                "spaces in@mail.com",
+                "invalid@-domain.com",
+                "test@domain.c",
+                "",
+                null,
+                "   ",
+                "test@domain..com",
+                "test@.com"
+        };
+
+        for (String invalidAuthor : invalidAuthors) {
+            assertThrows(IllegalArgumentException.class, () ->
+                            taskService.getTasksByAuthor(invalidAuthor),
+                    "Should throw IllegalArgumentException for invalid author: " + invalidAuthor);
+        }
     }
 
     @Test
