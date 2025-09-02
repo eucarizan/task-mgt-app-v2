@@ -112,6 +112,13 @@ public class TaskServiceIntegrationTest {
     }
 
     @Test
+    void it_filterUnknown_returnsEmpty() {
+        List<TaskResponse> tasks = taskService.getTasksByAuthor("test@mail.com");
+
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
     void it_createTask_persistsAndReturnResponse() {
         String title = "Integration task";
         String description = "Persist me";
