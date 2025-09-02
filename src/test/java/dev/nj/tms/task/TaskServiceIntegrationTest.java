@@ -91,6 +91,27 @@ public class TaskServiceIntegrationTest {
     }
 
     @Test
+    void it_filterOther_user1SeesOne() {
+        Task task1 = new Task("T1", "D1", "user1@mail.com");
+        Task task2 = new Task("T2", "D2", "user1@mail.com");
+        Task task3 = new Task("T3", "D3", "user2@mail.com");
+
+        taskRepository.saveAll(List.of(task1, task2, task3));
+
+        List<TaskResponse> tasks = taskService.getTasksByAuthor("user2@mail.com");
+
+        assertEquals(1, tasks.size());
+
+        long user2TaskCount = tasks.stream().filter(task -> "user2@mail.com".equalsIgnoreCase(task.author())).count();
+
+        assertEquals(1, user2TaskCount, "Should have exactly 1 task from user2");
+
+        long otherUserTaskCount = tasks.stream().filter(task -> !"user2@mail.com".equalsIgnoreCase(task.author())).count();
+
+        assertEquals(0, otherUserTaskCount, "Should have no tasks from other users");
+    }
+
+    @Test
     void it_createTask_persistsAndReturnResponse() {
         String title = "Integration task";
         String description = "Persist me";
