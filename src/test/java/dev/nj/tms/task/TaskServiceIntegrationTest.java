@@ -1,5 +1,6 @@
 package dev.nj.tms.task;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -9,6 +10,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,6 +36,45 @@ public class TaskServiceIntegrationTest {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @BeforeEach
+    void setUp() {
+        taskRepository.deleteAll();
+    }
+
+    @Test
+    void it_noFilter_user1SeesThree() {
+        String user1 = "user1@mail.com";
+        String user2 = "user2@mail.com";
+
+        Task task1 = new Task("Task 1 by User 1", "Description 1", user1);
+        Task task2 = new Task("Task 2 by User 1", "Description 2", user1);
+        Task task3 = new Task("Task 3 by User 2", "Description 3", user2);
+
+        taskRepository.saveAll(List.of(task1, task2, task3));
+
+        List<TaskResponse> tasks = taskService.getTasks();
+
+        assertEquals(3, tasks.size(), "Should return 3 tasks");
+
+        long countSelf = tasks.stream()
+                .filter(task -> task.author().equalsIgnoreCase(user1))
+                .count();
+        long countOther = tasks.stream()
+                .filter(task -> task.author().equalsIgnoreCase(user2))
+                .count();
+
+        assertEquals(2, countSelf);
+        assertEquals(1, countOther);
+
+        // verify order
+        assertEquals("Task 1 by User 1", tasks.get(0).title());
+        assertEquals("Task 2 by User 1", tasks.get(1).title());
+        assertEquals("Task 3 by User 2", tasks.get(2).title());
+    }
 
     @Test
     void createTask_persistsAndReturnResponse() {
