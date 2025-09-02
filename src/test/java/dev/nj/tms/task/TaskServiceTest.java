@@ -10,8 +10,7 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -89,9 +88,18 @@ public class TaskServiceTest {
     void getTasks_returnsEmpty_whenUnknownAuthor() {
         when(taskRepository.findAllByAuthorIgnoreCase(any(String.class), any(Sort.class))).thenReturn(List.of());
 
-        var responses = taskService.getTasksByAuthor("unknown");
+        var responses = taskService.getTasksByAuthor("test@mail.com");
 
         assertEquals(0, responses.size());
+    }
+
+    @Test
+    void getTasks_throwsOnInvalidAuthorFormat() {
+        String invalidAuthor = "not-an-email";
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> taskService.getTasksByAuthor(invalidAuthor));
+
+        assertTrue(exception.getMessage().contains("Author must be in a valid format"));
     }
 
     @Test

@@ -30,7 +30,18 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskResponse> getTasksByAuthor(String author) {
         logger.debug("Attempting to list tasks by author: {}", author);
-        List<TaskResponse> tasks = taskRepository.findAllByAuthorIgnoreCase(author, Sort.by(Sort.Direction.DESC, "created")).stream().map(taskMapper::toResponse).toList();
+
+        if (!isValidAuthorFormat(author)) {
+            logger.warn("Invalid author format provided: {}", author);
+            throw new IllegalArgumentException("Author must be in a valid format");
+        }
+
+        List<TaskResponse> tasks = taskRepository
+                .findAllByAuthorIgnoreCase(author, Sort.by(Sort.Direction.DESC, "created"))
+                .stream()
+                .map(taskMapper::toResponse)
+                .toList();
+
         logger.debug("Successfully list tasks by author: {}", author);
         return tasks;
     }
@@ -42,5 +53,10 @@ public class TaskServiceImpl implements TaskService {
         TaskResponse response = taskMapper.toResponse(task);
         logger.debug("Successfully create a task with id {} by: {}", response.id(), author);
         return response;
+    }
+
+    private boolean isValidAuthorFormat(String author) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return author != null && author.matches(emailRegex);
     }
 }
