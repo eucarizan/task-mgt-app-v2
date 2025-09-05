@@ -3,6 +3,7 @@ package dev.nj.tms.task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -128,15 +129,30 @@ public class TaskServiceIntegrationTest {
             "spaces in@mail.com",
             "invalid@-domain.com",
             "test@domain.c",
-            "",
-            "   ",
             "test@domain..com",
             "test@.com"
     })
+    @NullAndEmptySource
     void it_invalidAuthor_throws(String invalidAuthor) {
         assertThrows(IllegalArgumentException.class, () ->
                         taskService.getTasksByAuthor(invalidAuthor),
                 "Should throw IllegalArgumentException for invalid author: " + invalidAuthor);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "user@example.com",
+            "first.last@example.com",
+            "user123@example.co.uk",
+            "user-name@example-domain.com",
+            "user+tag@example.com",
+            "user@sub.domain.com",
+            "u@example.com",
+            "user@example.info",
+            "user@example.museum"
+    })
+    void it_validAuthor_doesNotThrow(String validAuthor) {
+        taskService.getTasksByAuthor(validAuthor);
     }
 
     @Test
