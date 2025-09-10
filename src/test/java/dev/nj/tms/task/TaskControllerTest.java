@@ -14,6 +14,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.Optional;
 
 import static dev.nj.tms.TestUtils.asJsonString;
@@ -136,5 +137,19 @@ public class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(dto)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void get_noFilter_returnsThree_forUser1() throws Exception {
+        when(taskService.getTasks()).thenReturn(List.of(
+                new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com"),
+                new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com"),
+                new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com")
+        ));
+
+        mockMvc.perform(get("/api/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
     }
 }

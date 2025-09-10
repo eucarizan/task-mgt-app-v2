@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Locale;
 
 @RestController
@@ -22,8 +23,18 @@ public class TaskController {
     }
 
     @GetMapping
-    public String getTasks() {
-        return "tasks";
+    public ResponseEntity<List<TaskResponse>> getTasks(@RequestParam(name = "author", required = false) String author) {
+        logger.info("Received request to get tasks, author filter: [{}]", author);
+        List<TaskResponse> tasks;
+
+        if (author == null) {
+            tasks = taskService.getTasks();
+        } else {
+            tasks = taskService.getTasksByAuthor(author);
+        }
+
+        logger.info("Returning {} tasks", tasks.size());
+        return ResponseEntity.ok(tasks);
     }
 
     @PostMapping
