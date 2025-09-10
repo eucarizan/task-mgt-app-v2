@@ -19,7 +19,9 @@ import java.util.Optional;
 
 import static dev.nj.tms.TestUtils.asJsonString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -142,14 +144,38 @@ public class TaskControllerTest {
     @Test
     @WithMockUser(username = "user1@mail.com")
     void get_noFilter_returnsThree_forUser1() throws Exception {
-        when(taskService.getTasks()).thenReturn(List.of(
+        List<TaskResponse> expectedTasks = List.of(
                 new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com"),
                 new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com"),
                 new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com")
-        ));
+        );
+
+        when(taskService.getTasks()).thenReturn(expectedTasks);
 
         mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(3));
+
+        verify(taskService).getTasks();
+    }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void get_filterSelf_returnsTwo() throws Exception {
+        List<TaskResponse> expectedTasks = List.of(
+                new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com"),
+                new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com")
+        );
+
+        when(taskService.getTasksByAuthor("user1@mail.com")).thenReturn(expectedTasks);
+
+        mockMvc.perform(get("/api/tasks")
+                        .param("author", "user1@mail.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value("1"))
+                .andExpect(jsonPath("$[1].id").value("2"));
+
+        verify(taskService).getTasksByAuthor("user1@mail.com");
     }
 }
