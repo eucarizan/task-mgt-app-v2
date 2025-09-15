@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import static dev.nj.tms.TestUtils.asJsonString;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -177,5 +176,22 @@ public class TaskControllerTest {
                 .andExpect(jsonPath("$[1].id").value("2"));
 
         verify(taskService).getTasksByAuthor("user1@mail.com");
+    }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void get_filterOther_returnsOne() throws Exception {
+        List<TaskResponse> expectedTasks = List.of(
+                new TaskResponse("1", "T1", "D1", "CREATED", "user2@mail.com")
+        );
+
+        when(taskService.getTasksByAuthor("user2@mail.com")).thenReturn(expectedTasks);
+
+        mockMvc.perform(get("/api/tasks")
+                        .param("author", "user2@mail.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+
+        verify(taskService).getTasksByAuthor("user2@mail.com");
     }
 }
