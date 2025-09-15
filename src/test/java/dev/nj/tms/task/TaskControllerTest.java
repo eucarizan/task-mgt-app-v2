@@ -194,4 +194,17 @@ public class TaskControllerTest {
 
         verify(taskService).getTasksByAuthor("user2@mail.com");
     }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void get_filterUnknown_returnsEmpty() throws Exception {
+        List<TaskResponse> expectedTasks = List.of();
+
+        mockMvc.perform(get("/api/tasks")
+                .param("author", "unknown@mail.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        verify(taskService).getTasksByAuthor("unknown@mail.com");
+    }
 }
