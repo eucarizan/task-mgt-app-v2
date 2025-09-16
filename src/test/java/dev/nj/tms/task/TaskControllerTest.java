@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static dev.nj.tms.TestUtils.asJsonString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -198,13 +199,25 @@ public class TaskControllerTest {
     @Test
     @WithMockUser(username = "user1@mail.com")
     void get_filterUnknown_returnsEmpty() throws Exception {
-        List<TaskResponse> expectedTasks = List.of();
-
         mockMvc.perform(get("/api/tasks")
-                .param("author", "unknown@mail.com"))
+                        .param("author", "unknown@mail.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
 
         verify(taskService).getTasksByAuthor("unknown@mail.com");
+    }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void get_invalidAuthor_returns400() throws Exception {
+        when(taskService.getTasksByAuthor("not-an-email"))
+                .thenThrow(new IllegalArgumentException("Author must be in valid format"));
+
+        mockMvc.perform(get("/api/tasks")
+                        .param("author", "not-an-email"))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertInstanceOf(IllegalArgumentException.class, result.getResolvedException()));
+
+        verify(taskService).getTasksByAuthor("not-an-email");
     }
 }
