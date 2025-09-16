@@ -18,6 +18,7 @@ import static dev.nj.tms.TestUtils.asJsonString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -43,7 +44,7 @@ public class TaskControllerIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    void getTasks_shouldReturn200WhenAuthenticatedWithRealRegisteredUser() throws Exception {
+    void it_authWithRegisteredUser_returns200() throws Exception {
         String email = "testuser@example.com";
         String password = "testpass123";
 
@@ -60,7 +61,7 @@ public class TaskControllerIntegrationTest {
     }
 
     @Test
-    void getTasks_shouldReturn401WhenAuthenticatingWithNonExistingUser() throws Exception {
+    void it_authNonExistingUser_returns401() throws Exception {
         String email = "nonexistent@example.com";
         String password = "wrongpassword";
 
@@ -70,7 +71,7 @@ public class TaskControllerIntegrationTest {
     }
 
     @Test
-    void getTasks_shouldReturn401WhenAuthenticatingWithWrongPassword() throws Exception {
+    void it_authWrongPassword_returns401() throws Exception {
         String email = "testuser2@example.com";
         String password = "correctpassword123";
 
@@ -86,5 +87,34 @@ public class TaskControllerIntegrationTest {
         mockMvc.perform(get("/api/tasks")
                         .with(httpBasic(email, wrongPassword)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void it_noFilter_user1SeesThree() throws Exception {
+        register("user1@mail.com", "secureP1");
+        register("user2@mail.com", "secureP2");
+        createTaskAs("user1@mail.com", "secureP1", "T1", "D1");
+        createTaskAs("user1@mail.com", "secureP1", "T2", "D2");
+        createTaskAs("user2@mail.com", "secureP2", "T3", "D3");
+
+        mockMvc.perform(get("/api/tasks")
+                        .with(httpBasic("user1@mail.com", "secureP1")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
+    }
+
+    private void register(String email, String password) throws Exception {
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(new NewAccountDto(email, password))))
+                .andExpect(status().isOk());
+    }
+
+    private void createTaskAs(String email, String password, String title, String description) throws Exception{
+        mockMvc.perform(post("/api/tasks")
+                        .with(httpBasic(email, password))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(new CreateTaskRequest(title, description))))
+                .andExpect(status().isOk());
     }
 }
