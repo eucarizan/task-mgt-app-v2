@@ -1,6 +1,8 @@
 package dev.nj.tms.task;
 
+import dev.nj.tms.account.AccountRepository;
 import dev.nj.tms.account.NewAccountDto;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -42,6 +44,18 @@ public class TaskControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    TaskRepository taskRepository;
+
+    @Autowired
+    AccountRepository accountRepository;
+
+    @BeforeEach
+    void cleanDb() {
+        taskRepository.deleteAll();
+        accountRepository.deleteAll();
+    }
 
     @Test
     void it_authWithRegisteredUser_returns200() throws Exception {
@@ -100,23 +114,23 @@ public class TaskControllerIntegrationTest {
         mockMvc.perform(get("/api/tasks")
                         .with(httpBasic("user1@mail.com", "secureP1")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(6));
+                .andExpect(jsonPath("$.length()").value(3));
     }
 
     @Test
     void it_filterSelf_user1SeesTwo() throws Exception {
-        register("user3@mail.com", "secureP3");
-        register("user4@mail.com", "secureP4");
-        createTaskAs("user3@mail.com", "secureP3", "T4", "D4");
-        createTaskAs("user3@mail.com", "secureP3", "T5", "D5");
-        createTaskAs("user4@mail.com", "secureP4", "T6", "D6");
+        register("user1@mail.com", "secureP1");
+        register("user2@mail.com", "secureP2");
+        createTaskAs("user1@mail.com", "secureP1", "T1", "D1");
+        createTaskAs("user1@mail.com", "secureP1", "T2", "D2");
+        createTaskAs("user2@mail.com", "secureP2", "T3", "D3");
 
         mockMvc.perform(get("/api/tasks")
-                        .with(httpBasic("user3@mail.com", "secureP3"))
-                        .param("author", "user3@mail.com"))
+                        .with(httpBasic("user1@mail.com", "secureP1"))
+                        .param("author", "user1@mail.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].author").value("user3@mail.com"));
+                .andExpect(jsonPath("$[0].author").value("user1@mail.com"));
     }
 
     private void register(String email, String password) throws Exception {
