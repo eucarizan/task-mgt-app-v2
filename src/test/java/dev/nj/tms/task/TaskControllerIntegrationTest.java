@@ -2,7 +2,6 @@ package dev.nj.tms.task;
 
 import dev.nj.tms.account.AccountRepository;
 import dev.nj.tms.account.NewAccountDto;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -138,6 +137,15 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
+    @Test
+    void it_invalidAuthor_returns400() throws Exception {
+        setupTestData();
+        mockMvc.perform(get("/api/tasks")
+                        .with(httpBasic("user1@mail.com", "secureP1"))
+                        .param("author", "not-an-email"))
+                .andExpect(status().isBadRequest());
+    }
+
     private void register(String email, String password) throws Exception {
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -156,7 +164,7 @@ public class TaskControllerIntegrationTest {
         createTaskAs("user2@mail.com", "secureP2", "T3", "D3");
     }
 
-    private void createTaskAs(String email, String password, String title, String description) throws Exception{
+    private void createTaskAs(String email, String password, String title, String description) throws Exception {
         mockMvc.perform(post("/api/tasks")
                         .with(httpBasic(email, password))
                         .contentType(MediaType.APPLICATION_JSON)
