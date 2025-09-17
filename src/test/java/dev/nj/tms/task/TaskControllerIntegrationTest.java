@@ -52,9 +52,15 @@ public class TaskControllerIntegrationTest {
     AccountRepository accountRepository;
 
     @BeforeEach
-    void cleanDb() {
+    void cleanDb() throws Exception {
         taskRepository.deleteAll();
         accountRepository.deleteAll();
+
+        register("user1@mail.com", "secureP1");
+        register("user2@mail.com", "secureP2");
+        createTaskAs("user1@mail.com", "secureP1", "T1", "D1");
+        createTaskAs("user1@mail.com", "secureP1", "T2", "D2");
+        createTaskAs("user2@mail.com", "secureP2", "T3", "D3");
     }
 
     @Test
@@ -105,12 +111,6 @@ public class TaskControllerIntegrationTest {
 
     @Test
     void it_noFilter_user1SeesThree() throws Exception {
-        register("user1@mail.com", "secureP1");
-        register("user2@mail.com", "secureP2");
-        createTaskAs("user1@mail.com", "secureP1", "T1", "D1");
-        createTaskAs("user1@mail.com", "secureP1", "T2", "D2");
-        createTaskAs("user2@mail.com", "secureP2", "T3", "D3");
-
         mockMvc.perform(get("/api/tasks")
                         .with(httpBasic("user1@mail.com", "secureP1")))
                 .andExpect(status().isOk())
@@ -119,18 +119,22 @@ public class TaskControllerIntegrationTest {
 
     @Test
     void it_filterSelf_user1SeesTwo() throws Exception {
-        register("user1@mail.com", "secureP1");
-        register("user2@mail.com", "secureP2");
-        createTaskAs("user1@mail.com", "secureP1", "T1", "D1");
-        createTaskAs("user1@mail.com", "secureP1", "T2", "D2");
-        createTaskAs("user2@mail.com", "secureP2", "T3", "D3");
-
         mockMvc.perform(get("/api/tasks")
                         .with(httpBasic("user1@mail.com", "secureP1"))
                         .param("author", "user1@mail.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].author").value("user1@mail.com"));
+    }
+
+    @Test
+    void it_filterOther_user1SeesOne() throws Exception {
+        mockMvc.perform(get("/api/tasks")
+                        .with(httpBasic("user1@mail.com", "secureP1"))
+                        .param("author", "user2@mail.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].author").value("user2@mail.com"));
     }
 
     private void register(String email, String password) throws Exception {
