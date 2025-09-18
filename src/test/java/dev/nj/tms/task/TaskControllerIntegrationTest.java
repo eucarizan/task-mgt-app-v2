@@ -16,6 +16,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static dev.nj.tms.TestUtils.asJsonString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -150,7 +151,6 @@ public class TaskControllerIntegrationTest {
     void it_createTask_returns200AndBody_whenValidRequestAndAuth() throws Exception {
         String email = "it_create_user@mail.com";
         String password = "it_pass_123";
-
         NewAccountDto acc = new NewAccountDto(email, password);
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -168,6 +168,26 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.description").value("Do something important"))
                 .andExpect(jsonPath("$.status").value("CREATED"))
                 .andExpect(jsonPath("$.author").value(email));
+    }
+
+    @Test
+    void it_createTask_returns400_whenDescriptionIsBlank() throws Exception {
+        String email = "it_blank_desc@mail.com";
+        String password = "p@ssw0rd";
+        NewAccountDto acc = new NewAccountDto(email, password);
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(acc)))
+                .andExpect(status().isOk());
+
+        CreateTaskRequest dto = new CreateTaskRequest("   ", "Do something");
+        mockMvc.perform(post("/api/tasks")
+                        .with(httpBasic(email, password))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("title should not be blank")));
     }
 
     private void register(String email, String password) throws Exception {
