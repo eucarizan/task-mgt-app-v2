@@ -171,8 +171,8 @@ public class TaskControllerIntegrationTest {
     }
 
     @Test
-    void it_createTask_returns400_whenDescriptionIsBlank() throws Exception {
-        String email = "it_blank_desc@mail.com";
+    void it_createTask_returns400_whenTitlesBlank() throws Exception {
+        String email = "it_blank_title@mail.com";
         String password = "p@ssw0rd";
         NewAccountDto acc = new NewAccountDto(email, password);
         mockMvc.perform(post("/api/accounts")
@@ -188,6 +188,26 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.messages").isArray())
                 .andExpect(jsonPath("$.messages", hasItem("title should not be blank")));
+    }
+
+    @Test
+    void it_createTask_returns400_whenDescriptionIsBlank() throws Exception {
+        String email = "it_blank_desc@mail.com";
+        String password = "p@ssw0rd";
+        NewAccountDto acc = new NewAccountDto(email, password);
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(acc)))
+                .andExpect(status().isOk());
+
+        CreateTaskRequest dto = new CreateTaskRequest("My Task", "   ");
+        mockMvc.perform(post("/api/tasks")
+                        .with(httpBasic(email, password))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("description should not be blank")));
     }
 
     private void register(String email, String password) throws Exception {
