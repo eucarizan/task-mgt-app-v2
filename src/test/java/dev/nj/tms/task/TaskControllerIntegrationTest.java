@@ -210,6 +210,15 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.messages", hasItem("description should not be blank")));
     }
 
+    @Test
+    void it_createTask_returns401_whenNoAuth() throws Exception {
+        CreateTaskRequest dto = new CreateTaskRequest("My Task", "Do something");
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isUnauthorized());
+    }
+
     private void register(String email, String password) throws Exception {
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
