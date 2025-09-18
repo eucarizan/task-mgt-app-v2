@@ -146,6 +146,30 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void it_createTask_returns200AndBody_whenValidRequestAndAuth() throws Exception {
+        String email = "it_create_user@mail.com";
+        String password = "it_pass_123";
+
+        NewAccountDto acc = new NewAccountDto(email, password);
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(acc)))
+                .andExpect(status().isOk());
+
+        CreateTaskRequest dto = new CreateTaskRequest("My Task", "Do something important");
+        mockMvc.perform(post("/api/tasks")
+                        .with(httpBasic(email, password))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.title").value("My Task"))
+                .andExpect(jsonPath("$.description").value("Do something important"))
+                .andExpect(jsonPath("$.status").value("CREATED"))
+                .andExpect(jsonPath("$.author").value(email));
+    }
+
     private void register(String email, String password) throws Exception {
         mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
