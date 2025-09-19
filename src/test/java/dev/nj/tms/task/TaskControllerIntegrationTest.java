@@ -219,13 +219,6 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    private void register(String email, String password) throws Exception {
-        mockMvc.perform(post("/api/accounts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new NewAccountDto(email, password))))
-                .andExpect(status().isOk());
-    }
-
     private void setupTestData() throws Exception {
         taskRepository.deleteAll();
         accountRepository.deleteAll();
@@ -235,6 +228,13 @@ public class TaskControllerIntegrationTest {
         createTaskAs("user1@mail.com", "secureP1", "T1", "D1");
         createTaskAs("user1@mail.com", "secureP1", "T2", "D2");
         createTaskAs("user2@mail.com", "secureP2", "T3", "D3");
+    }
+
+    private void register(String email, String password) throws Exception {
+        mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(new NewAccountDto(email, password))))
+                .andExpect(status().isOk());
     }
 
     private void createTaskAs(String email, String password, String title, String description) throws Exception {
