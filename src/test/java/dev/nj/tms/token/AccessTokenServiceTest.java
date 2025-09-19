@@ -50,4 +50,16 @@ public class AccessTokenServiceTest {
         verify(passwordEncoder).matches(password, encodedPassword);
         verify(tokenRepository, atLeastOnce()).save(any(AccessToken.class));
     }
+
+    @Test
+    void createToken_unknownUser_throwsUnauthorized() {
+        String email = "test@mail.com";
+
+        when(accountRepository.findByEmailIgnoreCase(email))
+                .thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> tokenService.createToken(email, "secureP1"));
+
+        assertTrue(exception.getMessage().contains("Invalid credentials"));
+    }
 }
