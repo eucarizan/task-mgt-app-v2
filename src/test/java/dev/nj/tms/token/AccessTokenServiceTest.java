@@ -37,8 +37,7 @@ public class AccessTokenServiceTest {
         String encodedPassword = "$2a$10$encodedPassword";
 
         Account account = new Account(email, encodedPassword);
-        when(accountRepository.findByEmailIgnoreCase(email))
-                .thenReturn(Optional.of(account));
+        when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(account));
         when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
 
         String token = tokenService.createToken(email, password);
@@ -59,6 +58,21 @@ public class AccessTokenServiceTest {
                 .thenReturn(Optional.empty());
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> tokenService.createToken(email, "secureP1"));
+
+        assertTrue(exception.getMessage().contains("Invalid credentials"));
+    }
+
+    @Test
+    void createToken_wrongPassword_throwsUnauthorized() {
+        String email = "user1@mail.com";
+        String password = "wrongPass1";
+        String encodedPassword = "$2a$10$encodedPassword";
+
+        Account account = new Account(email, encodedPassword);
+        when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(account));
+        when(passwordEncoder.matches(password, encodedPassword)).thenReturn(false);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> tokenService.createToken(email, password));
 
         assertTrue(exception.getMessage().contains("Invalid credentials"));
     }
