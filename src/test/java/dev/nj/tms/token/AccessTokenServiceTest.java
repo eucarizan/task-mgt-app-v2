@@ -39,10 +39,10 @@ public class AccessTokenServiceTest {
         when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(account));
         when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
 
-        String token = tokenService.createToken(email, password);
+        AccessTokenResponse token = tokenService.createToken(email, password);
 
         assertNotNull(token);
-        assertTrue(token.length() >= 10);
+        assertTrue(token.token().length() >= 10);
 
         verify(accountRepository).findByEmailIgnoreCase(email);
         verify(passwordEncoder).matches(password, encodedPassword);

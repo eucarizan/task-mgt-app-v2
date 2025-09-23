@@ -48,7 +48,7 @@ public class AccessTokenServiceIT {
         String password = "secureP1";
         accountRepository.save(new Account(email, passwordEncoder.encode(password)));
 
-        String token = accessTokenService.createToken(email, password);
+        AccessTokenResponse token = accessTokenService.createToken(email, password);
 
         assertNotNull(token);
     }

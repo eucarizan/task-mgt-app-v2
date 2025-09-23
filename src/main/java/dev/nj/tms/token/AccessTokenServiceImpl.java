@@ -26,7 +26,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     }
 
     @Override
-    public String createToken(String email, String password) {
+    public AccessTokenResponse createToken(String email, String password) {
         logger.debug("Attempting to create token for email: {}", email);
         Account account = accountRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> {
@@ -50,6 +50,6 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         logger.debug("Persisted new access token for email: {}", email);
 
         logger.info("Access token created successfully for email: {}", email);
-        return tokenValue;
+        return new AccessTokenResponse(token.getToken());
     }
 }
