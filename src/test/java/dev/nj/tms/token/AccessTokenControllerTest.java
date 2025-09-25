@@ -12,11 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Base64;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,16 +41,17 @@ public class AccessTokenControllerTest {
     void createToken_validBasic_returnsToken() throws Exception {
         String email = "user1@mail.com";
         String password = "secureP1";
-        AccessTokenResponse tokenResponse = new AccessTokenResponse("jwt-token");
-        Account mockAccount = new Account(email, passwordEncoder.encode(password));
+        String encoded = passwordEncoder.encode(password);
+        Account mockAccount = new Account(email, encoded);
 
         when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(mockAccount));
-        when(accessTokenService.createToken(eq(email), eq(password))).thenReturn(tokenResponse);
+        when(passwordEncoder.matches(password, encoded)).thenReturn(true);
 
-        String creds = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
+        AccessTokenResponse tokenResponse = new AccessTokenResponse("jwt-token");
+        when(accessTokenService.createToken(eq(email), eq(encoded))).thenReturn(tokenResponse);
 
         mockMvc.perform(post("/api/auth/token")
-                        .header("Authorization", "Basic " + creds))
+                        .with(httpBasic(email, password)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("jwt-token"));
     }
