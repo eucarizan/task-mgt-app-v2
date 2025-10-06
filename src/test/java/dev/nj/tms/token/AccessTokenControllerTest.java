@@ -55,4 +55,15 @@ public class AccessTokenControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("jwt-token"));
     }
+
+    @Test
+    void createToken_invalidBasic_returns401() throws Exception {
+        String email = "user1@mail.com";
+
+        when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/token")
+                        .with(httpBasic(email, "secureP1")))
+                .andExpect(status().isUnauthorized());
+    }
 }
