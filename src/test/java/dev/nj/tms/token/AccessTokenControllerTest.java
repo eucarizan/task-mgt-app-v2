@@ -66,4 +66,19 @@ public class AccessTokenControllerTest {
                         .with(httpBasic(email, "secureP1")))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void createToken_missingAuth_returns401() throws Exception {
+        mockMvc.perform(post("/api/auth/token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void createToken_malformedToken_returns401() throws Exception {
+        String fakeToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
+        mockMvc.perform(post("/api/auth/token")
+                        .header("Authorization", "Basic " + fakeToken))
+                .andExpect(status().isUnauthorized());
+    }
 }
