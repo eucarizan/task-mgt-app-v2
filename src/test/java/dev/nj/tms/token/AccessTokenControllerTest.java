@@ -80,6 +80,17 @@ public class AccessTokenControllerTest {
     }
 
     @Test
+    void createToken_invalidAuth_doesNotCallService() throws Exception {
+        String email = "nonexistent@mail.com";
+
+        when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/token")
+                        .with(httpBasic(email, "password")))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void createToken_missingAuth_returns401() throws Exception {
         mockMvc.perform(post("/api/auth/token"))
                 .andExpect(status().isUnauthorized());
