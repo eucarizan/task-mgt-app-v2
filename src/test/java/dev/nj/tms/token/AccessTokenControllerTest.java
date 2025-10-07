@@ -57,13 +57,25 @@ public class AccessTokenControllerTest {
     }
 
     @Test
-    void createToken_invalidBasic_returns401() throws Exception {
+    void createToken_wrongPassword_returns401() throws Exception {
         String email = "user1@mail.com";
+        String password = "secureP1";
+        String wrongPassword = "wrongP1";
+        String encoded = passwordEncoder.encode(password);
+        Account mockAccount = new Account(email, encoded);
 
-        when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.empty());
+        when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(mockAccount));
+        when(passwordEncoder.matches(wrongPassword, encoded)).thenReturn(false);
 
         mockMvc.perform(post("/api/auth/token")
-                        .with(httpBasic(email, "secureP1")))
+                        .with(httpBasic(email, wrongPassword)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void createToken_emptyCredentials_returns401() throws Exception {
+        mockMvc.perform(post("/api/auth/token")
+                        .with(httpBasic("", "")))
                 .andExpect(status().isUnauthorized());
     }
 
