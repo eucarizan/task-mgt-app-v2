@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -88,6 +88,8 @@ public class AccessTokenControllerTest {
         mockMvc.perform(post("/api/auth/token")
                         .with(httpBasic(email, "password")))
                 .andExpect(status().isUnauthorized());
+
+        verify(accessTokenService, never()).createToken(any(), any());
     }
 
     @Test
