@@ -15,7 +15,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static dev.nj.tms.TestUtils.asJsonString;
+import static dev.nj.tms.TestUtils.*;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -223,18 +223,11 @@ public class TaskControllerIntegrationTest {
         taskRepository.deleteAll();
         accountRepository.deleteAll();
 
-        register("user1@mail.com", "secureP1");
-        register("user2@mail.com", "secureP2");
+        register("user1@mail.com", "secureP1", mockMvc);
+        register("user2@mail.com", "secureP2", mockMvc);
         createTaskAs("user1@mail.com", "secureP1", "T1", "D1");
         createTaskAs("user1@mail.com", "secureP1", "T2", "D2");
         createTaskAs("user2@mail.com", "secureP2", "T3", "D3");
-    }
-
-    private void register(String email, String password) throws Exception {
-        mockMvc.perform(post("/api/accounts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(new NewAccountDto(email, password))))
-                .andExpect(status().isOk());
     }
 
     private void createTaskAs(String email, String password, String title, String description) throws Exception {
