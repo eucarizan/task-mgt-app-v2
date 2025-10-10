@@ -48,7 +48,7 @@ public class AccessTokenControllerTest {
         when(passwordEncoder.matches(password, encoded)).thenReturn(true);
 
         AccessTokenResponse tokenResponse = new AccessTokenResponse("jwt-token");
-        when(accessTokenService.createToken(eq(email), eq(encoded))).thenReturn(tokenResponse);
+        when(accessTokenService.createToken(eq(email))).thenReturn(tokenResponse);
 
         mockMvc.perform(post("/api/auth/token")
                         .with(httpBasic(email, password)))
@@ -89,7 +89,7 @@ public class AccessTokenControllerTest {
                         .with(httpBasic(email, "password")))
                 .andExpect(status().isUnauthorized());
 
-        verify(accessTokenService, never()).createToken(any(), any());
+        verify(accessTokenService, never()).createToken(any());
     }
 
     @Test

@@ -25,7 +25,7 @@ public class AccessTokenController {
     public ResponseEntity<AccessTokenResponse> createToken(@AuthenticationPrincipal UserDetails userDetails) {
         String author = userDetails.getUsername();
         logger.info("Received request to create token by: {}", author);
-        AccessTokenResponse tokenResponse = tokenService.createToken(author, userDetails.getPassword());
+        AccessTokenResponse tokenResponse = tokenService.createToken(author);
         logger.info("Successfully created token for: {}", author);
         return ResponseEntity.ok(tokenResponse);
     }

@@ -26,7 +26,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     }
 
     @Override
-    public AccessTokenResponse createToken(String email, String password) {
+    public AccessTokenResponse createToken(String email) {
         logger.debug("Attempting to create token for email: {}", email);
         Account account = accountRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> {
@@ -34,12 +34,6 @@ public class AccessTokenServiceImpl implements AccessTokenService {
                     return new IllegalArgumentException("Invalid credentials");
                 });
         logger.debug("Account found for email: {}", email);
-
-        if (!passwordEncoder.matches(password, account.getPassword())) {
-            logger.warn("Invalid password attempt for email: {}", email);
-            throw new IllegalArgumentException("Invalid credentials");
-        }
-        logger.debug("Password validated successfully for email: {}", email);
 
         byte[] bytes = KeyGenerators.secureRandom(10).generateKey();
         String tokenValue = new BigInteger(1, bytes).toString(16);

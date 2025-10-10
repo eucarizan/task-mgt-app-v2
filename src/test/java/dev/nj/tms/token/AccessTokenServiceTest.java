@@ -32,20 +32,17 @@ public class AccessTokenServiceTest {
     @Test
     void createToken_validCredentials_returnsToken() {
         String email = "user1@mail.com";
-        String password = "secureP1";
         String encodedPassword = "$2a$10$encodedPassword";
 
         Account account = new Account(email, encodedPassword);
         when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(account));
-        when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
 
-        AccessTokenResponse token = tokenService.createToken(email, password);
+        AccessTokenResponse token = tokenService.createToken(email);
 
         assertNotNull(token);
         assertTrue(token.token().length() >= 10);
 
         verify(accountRepository).findByEmailIgnoreCase(email);
-        verify(passwordEncoder).matches(password, encodedPassword);
         verify(tokenRepository, atLeastOnce()).save(any(AccessToken.class));
     }
 
@@ -56,22 +53,7 @@ public class AccessTokenServiceTest {
         when(accountRepository.findByEmailIgnoreCase(email))
                 .thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> tokenService.createToken(email, "secureP1"));
-
-        assertTrue(exception.getMessage().contains("Invalid credentials"));
-    }
-
-    @Test
-    void createToken_wrongPassword_throwsUnauthorized() {
-        String email = "user1@mail.com";
-        String password = "wrongPass1";
-        String encodedPassword = "$2a$10$encodedPassword";
-
-        Account account = new Account(email, encodedPassword);
-        when(accountRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(account));
-        when(passwordEncoder.matches(password, encodedPassword)).thenReturn(false);
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> tokenService.createToken(email, password));
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> tokenService.createToken(email));
 
         assertTrue(exception.getMessage().contains("Invalid credentials"));
     }
