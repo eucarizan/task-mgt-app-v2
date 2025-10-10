@@ -17,12 +17,10 @@ public class AccessTokenServiceImpl implements AccessTokenService {
 
     private final AccessTokenRepository tokenRepository;
     private final AccountRepository accountRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public AccessTokenServiceImpl(AccessTokenRepository tokenRepository, AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
+    public AccessTokenServiceImpl(AccessTokenRepository tokenRepository, AccountRepository accountRepository) {
         this.tokenRepository = tokenRepository;
         this.accountRepository = accountRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
