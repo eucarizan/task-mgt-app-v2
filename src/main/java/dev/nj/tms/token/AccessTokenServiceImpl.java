@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 
 @Service
 public class AccessTokenServiceImpl implements AccessTokenService {
@@ -37,7 +38,9 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         String tokenValue = new BigInteger(1, bytes).toString(16);
         logger.debug("Generated new access token for email: {}", email);
 
-        AccessToken token = new AccessToken(tokenValue);
+        LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
+        AccessToken token = new AccessToken(tokenValue, account, expiresAt);
+
         tokenRepository.save(token);
         logger.debug("Persisted new access token for email: {}", email);
 
