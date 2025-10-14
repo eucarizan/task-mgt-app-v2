@@ -1,9 +1,12 @@
 package dev.nj.tms.config;
 
+import dev.nj.tms.security.AccessTokenAuthenticationProvider;
 import dev.nj.tms.token.AccessTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/shutdown").permitAll()
@@ -30,9 +33,14 @@ public class SecurityConfig {
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(Customizer.withDefaults())
-                .addFilterBefore(new AccessTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new AccessTokenFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AccessTokenAuthenticationProvider accessTokenAuthenticationProvider) {
+        return new ProviderManager(accessTokenAuthenticationProvider);
     }
 
     @Bean
