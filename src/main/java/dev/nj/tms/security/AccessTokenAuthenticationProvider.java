@@ -41,7 +41,6 @@ public class AccessTokenAuthenticationProvider implements AuthenticationProvider
 
         AccountUserDetails userDetails = new AccountUserDetails(account);
 
-        logger.debug("User is authenticated");
         return new BearerTokenAuthenticationToken(
                 userDetails,
                 token,
