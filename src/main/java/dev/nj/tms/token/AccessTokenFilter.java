@@ -41,15 +41,22 @@ public class AccessTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         if (requiredBearerAuth(request)) {
-            String token = extractBearerToken(request);
             try {
+                String token = extractBearerToken(request);
                 BearerTokenAuthenticationToken authRequest = new BearerTokenAuthenticationToken(token);
                 Authentication authenticated = authenticationManager.authenticate(authRequest);
                 SecurityContextHolder.getContext().setAuthentication(authenticated);
                 logger.debug("Successfully authenticated user: {}", authenticated.getName());
             } catch (AuthenticationException e) {
                 logger.debug("Authentication failed: {}", e.getMessage());
-                SecurityContextHolder.clearContext();
+
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write(String.format(
+                        "{\"error\": \"Authentication failed\", \"message\": \"%s\"}",
+                        e.getMessage()
+                ));
+
                 return;
             }
         }
@@ -61,7 +68,7 @@ public class AccessTokenFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         return matchers.stream().anyMatch(matcher ->
-                matcher.method.name().equals(method) && matcher.pattern.matches((PathContainer) PathPatternParser.defaultInstance.parse(path))
+                matcher.method.name().equals(method) && matcher.pattern.matches(PathContainer.parsePath(path))
         );
     }
 
@@ -87,7 +94,8 @@ public class AccessTokenFilter extends OncePerRequestFilter {
             throw new BadCredentialsException("Bearer token cannot be empty");
         }
 
-        logger.info("Extracted bearer token: {}", token);
+        logger.debug("Extracted bearer token: {}", token);
+        return token;
     }
 
     private void addRequestMatcher(String pattern, HttpMethod httpMethod) {
