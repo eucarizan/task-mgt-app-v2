@@ -82,7 +82,7 @@ public class AccessTokenFilter extends OncePerRequestFilter {
         String[] parts = authHeader.split("\\s+");
 
         if (parts.length != 2) {
-            throw new BadCredentialsException("Malformed authorization header. Expected format: 'Bearer <token')");
+            throw new BadCredentialsException("Malformed authorization header. Expected format: 'Bearer <token>'");
         }
 
         if (!"Bearer".equalsIgnoreCase(parts[0])) {

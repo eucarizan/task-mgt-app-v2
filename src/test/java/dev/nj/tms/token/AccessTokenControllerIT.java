@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -73,6 +74,89 @@ public class AccessTokenControllerIT {
         mockMvc.perform(get("/api/tasks")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void it_getTasks_withInvalidToken_returns401() throws Exception {
+        String fakeToken = "invalid-token-12345";
+
+        mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + fakeToken))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Authentication failed"))
+                .andExpect(jsonPath("$.message").value("Invalid token"));
+    }
+
+    @Test
+    void it_getTasks_withNoToken_returns401() throws Exception {
+        mockMvc.perform(get("/api/tasks"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void it_createTask_withValidToken_returns200() throws Exception {
+        String email = "taskcreator@email.com";
+        String password = "secureP2";
+
+        register(email, password, mockMvc);
+        String token = createToken(email, password);
+
+        String taskJson = """
+                {
+                    "title": "Token Task",
+                    "description": "Created with bearer token"
+                }
+                """;
+
+        mockMvc.perform(post("/api/tasks")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(taskJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Token Task"))
+                .andExpect(jsonPath("$.author").value(email));
+    }
+
+    @Test
+    void it_createTask_withInvalidToken_returns401() throws Exception {
+        String taskJson = """
+                {
+                    "title": "Test Task",
+                    "description": "Test Description"
+                }
+                """;
+
+        mockMvc.perform(post("/api/tasks")
+                        .header("Authorization", "Bearer invalid-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(taskJson))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Authentication failed"))
+                .andExpect(jsonPath("$.message").value("Invalid token"));
+    }
+
+    @Test
+    void it_createTask_withMissingBearerPrefix_returns401() throws Exception {
+        String email = "user@mail.com";
+        String password = "secureP1";
+
+        register(email, password, mockMvc);
+        String token = createToken(email, password);
+
+        String taskJson = """
+                {
+                    "title": "Test Task",
+                    "description": "Test Description"
+                }
+                """;
+
+        mockMvc.perform(post("/api/tasks")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(taskJson))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Authentication failed"))
+                .andExpect(jsonPath("$.message").value("Malformed authorization header. Expected format: 'Bearer <token>'"));
     }
 
     private String createToken(String email, String password) throws Exception {
