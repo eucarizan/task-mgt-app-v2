@@ -22,7 +22,11 @@ public class TaskServiceImpl implements TaskService {
 
     public List<TaskResponse> getTasks() {
         logger.debug("Attempting to list tasks");
-        List<TaskResponse> tasks = taskRepository.findAll().stream().map(taskMapper::toResponse).toList();
+        List<TaskResponse> tasks = taskRepository
+                .findAll(Sort.by(Sort.Direction.DESC, "created"))
+                .stream()
+                .map(taskMapper::toResponse)
+                .toList();
         logger.debug("Successfully list tasks: {}", tasks.size());
         return tasks;
     }
