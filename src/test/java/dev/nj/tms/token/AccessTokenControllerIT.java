@@ -17,8 +17,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static dev.nj.tms.TestUtils.objectMapper;
-import static dev.nj.tms.TestUtils.register;
+import static dev.nj.tms.TestUtils.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -69,7 +68,7 @@ public class AccessTokenControllerIT {
         String password = "secureP1";
 
         register(email, password, mockMvc);
-        String token = createToken(email, password);
+        String token = createToken(email, password, mockMvc);
 
         mockMvc.perform(get("/api/tasks")
                         .header("Authorization", "Bearer " + token))
@@ -99,7 +98,7 @@ public class AccessTokenControllerIT {
         String password = "secureP2";
 
         register(email, password, mockMvc);
-        String token = createToken(email, password);
+        String token = createToken(email, password, mockMvc);
 
         String taskJson = """
                 {
@@ -141,7 +140,7 @@ public class AccessTokenControllerIT {
         String password = "secureP1";
 
         register(email, password, mockMvc);
-        String token = createToken(email, password);
+        String token = createToken(email, password, mockMvc);
 
         String taskJson = """
                 {
@@ -157,18 +156,6 @@ public class AccessTokenControllerIT {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Authentication failed"))
                 .andExpect(jsonPath("$.message").value("Malformed authorization header. Expected format: 'Bearer <token>'"));
-    }
-
-    private String createToken(String email, String password) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/auth/token")
-                        .with(httpBasic(email, password)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists())
-                .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        AccessTokenResponse tokenResponse = objectMapper.readValue(responseBody, AccessTokenResponse.class);
-        return tokenResponse.token();
     }
 
 }
