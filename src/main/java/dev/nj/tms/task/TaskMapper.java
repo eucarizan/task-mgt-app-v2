@@ -10,7 +10,8 @@ public class TaskMapper {
                 task.getTitle(),
                 task.getDescription(),
                 task.getStatus().toString(),
-                task.getAuthor()
+                task.getAuthor(),
+                task.getAssignee() != null ? task.getAssignee() : "none"
         );
     }
 }

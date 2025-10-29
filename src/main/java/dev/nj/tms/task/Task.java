@@ -20,6 +20,8 @@ public class Task {
 
     private String author;
 
+    private String assignee;
+
     @Temporal(TemporalType.TIMESTAMP)
     @JsonIgnore
     private LocalDateTime created;
@@ -31,6 +33,7 @@ public class Task {
         this.description = description;
         this.status = TaskStatus.CREATED;
         this.author = author;
+        this.assignee = null;
         this.created = LocalDateTime.now();
     }
 
@@ -52,6 +55,14 @@ public class Task {
 
     public String getAuthor() {
         return author;
+    }
+
+    public String getAssignee() {
+        return assignee;
+    }
+
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
     }
 
     public LocalDateTime getCreated() {
