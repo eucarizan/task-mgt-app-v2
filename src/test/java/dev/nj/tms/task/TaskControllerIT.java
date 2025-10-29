@@ -261,6 +261,24 @@ public class TaskControllerIT {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void it_createTask_returnsTaskWithAssigneeNone() throws Exception {
+        String email = "creator@mail.com";
+        String password = "secureP1";
+
+        register(email, password, mockMvc);
+        String token = createToken(email, password, mockMvc);
+
+        CreateTaskRequest dto = new CreateTaskRequest("New Task", "Task description");
+
+        mockMvc.perform(post("/api/tasks")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignee").value("none"));
+    }
+
     private void setupTestData() throws Exception {
         taskRepository.deleteAll();
         tokenRepository.deleteAll();
