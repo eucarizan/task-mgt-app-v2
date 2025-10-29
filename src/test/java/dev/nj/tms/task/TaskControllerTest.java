@@ -90,7 +90,7 @@ public class TaskControllerTest {
         String expectedAuthor = "user@example.com";
 
         CreateTaskRequest dto = new CreateTaskRequest(title, description);
-        TaskResponse serviceResponse = new TaskResponse("42", title, description, "CREATED", expectedAuthor);
+        TaskResponse serviceResponse = new TaskResponse("42", title, description, "CREATED", expectedAuthor, "none");
 
         when(taskService.createTask(eq(title), eq(description), eq(expectedAuthor))).thenReturn(serviceResponse);
 
@@ -145,9 +145,9 @@ public class TaskControllerTest {
     @WithMockUser(username = "user1@mail.com")
     void get_noFilter_returnsThree_forUser1() throws Exception {
         List<TaskResponse> expectedTasks = List.of(
-                new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com"),
-                new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com"),
-                new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com")
+                new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none"),
+                new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none"),
+                new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none")
         );
 
         when(taskService.getTasks()).thenReturn(expectedTasks);
@@ -163,8 +163,8 @@ public class TaskControllerTest {
     @WithMockUser(username = "user1@mail.com")
     void get_filterSelf_returnsTwo() throws Exception {
         List<TaskResponse> expectedTasks = List.of(
-                new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com"),
-                new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com")
+                new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none"),
+                new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none")
         );
 
         when(taskService.getTasksByAuthor("user1@mail.com")).thenReturn(expectedTasks);
@@ -183,7 +183,7 @@ public class TaskControllerTest {
     @WithMockUser(username = "user1@mail.com")
     void get_filterOther_returnsOne() throws Exception {
         List<TaskResponse> expectedTasks = List.of(
-                new TaskResponse("1", "T1", "D1", "CREATED", "user2@mail.com")
+                new TaskResponse("1", "T1", "D1", "CREATED", "user2@mail.com", "none")
         );
 
         when(taskService.getTasksByAuthor("user2@mail.com")).thenReturn(expectedTasks);

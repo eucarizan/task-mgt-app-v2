@@ -35,9 +35,9 @@ public class TaskServiceTest {
         Task t3 = new Task("T3", "D3", "user2@mail.com");
 
         when(taskRepository.findAll()).thenReturn(List.of(t1, t2, t3));
-        when(taskMapper.toResponse(t1)).thenReturn(new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com"));
-        when(taskMapper.toResponse(t2)).thenReturn(new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com"));
-        when(taskMapper.toResponse(t3)).thenReturn(new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com"));
+        when(taskMapper.toResponse(t1)).thenReturn(new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none"));
+        when(taskMapper.toResponse(t2)).thenReturn(new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none"));
+        when(taskMapper.toResponse(t3)).thenReturn(new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none"));
 
         var responses = taskService.getTasks();
 
@@ -56,8 +56,8 @@ public class TaskServiceTest {
         Task t2 = new Task("T2", "D2", "user1@mail.com");
 
         when(taskRepository.findAllByAuthorIgnoreCase(any(String.class), any(Sort.class))).thenReturn(List.of(t1, t2));
-        when(taskMapper.toResponse(t1)).thenReturn(new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com"));
-        when(taskMapper.toResponse(t2)).thenReturn(new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com"));
+        when(taskMapper.toResponse(t1)).thenReturn(new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none"));
+        when(taskMapper.toResponse(t2)).thenReturn(new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none"));
 
         var responses = taskService.getTasksByAuthor("user1@mail.com");
 
@@ -73,7 +73,7 @@ public class TaskServiceTest {
         Task t3 = new Task("T3", "D3", "user2@mail.com");
 
         when(taskRepository.findAllByAuthorIgnoreCase(any(String.class), any(Sort.class))).thenReturn(List.of(t3));
-        when(taskMapper.toResponse(t3)).thenReturn(new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com"));
+        when(taskMapper.toResponse(t3)).thenReturn(new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none"));
 
         var responses = taskService.getTasksByAuthor("user2@mail.com");
 
@@ -113,7 +113,7 @@ public class TaskServiceTest {
 
         when(taskMapper.toResponse(any(Task.class))).thenAnswer(inv -> {
             Task t = inv.getArgument(0);
-            return new TaskResponse("1", t.getTitle(), t.getDescription(), t.getStatus().toString(), t.getAuthor());
+            return new TaskResponse("1", t.getTitle(), t.getDescription(), t.getStatus().toString(), t.getAuthor(), t.getAssignee());
         });
 
         TaskResponse response = taskService.createTask(title, description, authorEmail);
