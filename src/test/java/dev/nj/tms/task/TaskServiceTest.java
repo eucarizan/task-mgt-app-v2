@@ -160,4 +160,17 @@ public class TaskServiceTest {
         verify(accountRepository).existsByEmailIgnoreCase(assigneeEmail);
         verify(taskRepository).save(existingTask);
     }
+
+    @Test
+    void assignTask_taskNotFound_throwsTaskNotFoundException() {
+        Long taskId = 999L;
+        String assigneeEmail = "user2@mail.com";
+        String authorEmail = "user1@mail.com";
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(TaskNotFoundException.class, () -> taskService.assignTask(taskId, assigneeEmail, authorEmail));
+
+        assertTrue(exception.getMessage().contains("Task not found with id: 999"));
+    }
 }
