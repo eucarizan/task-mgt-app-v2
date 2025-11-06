@@ -193,4 +193,23 @@ public class TaskServiceTest {
 
         assertTrue(exception.getMessage().contains("Assignee not found with email: nonexistent@mail.com"));
     }
+
+    @Test
+    void assignTask_userIsNotAuthor_throwsForbiddenException() {
+        Long taskId = 1L;
+        String assigneeEmail = "user2@mail.com";
+        String authorEmail = "user1@mail.com";
+        String differentEmail = "user3@mail.com";
+
+        Task existingTask = new Task("Test Task", "Description", authorEmail);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+
+        Exception exception = assertThrows(
+                ForbiddenException.class,
+                () -> taskService.assignTask(taskId, assigneeEmail, differentEmail)
+        );
+
+        assertTrue(exception.getMessage().contains("Only task author can assign tasks"));
+    }
 }
