@@ -1,5 +1,7 @@
 package dev.nj.tms.task;
 
+import dev.nj.tms.account.AccountNotFoundException;
+import dev.nj.tms.account.AccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -13,10 +15,12 @@ public class TaskServiceImpl implements TaskService {
     private static final Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
 
     private final TaskRepository taskRepository;
+    private final AccountRepository accountRepository;
     private final TaskMapper taskMapper;
 
-    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper) {
+    public TaskServiceImpl(TaskRepository taskRepository, AccountRepository accountRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
+        this.accountRepository = accountRepository;
         this.taskMapper = taskMapper;
     }
 
@@ -57,6 +61,28 @@ public class TaskServiceImpl implements TaskService {
         TaskResponse response = taskMapper.toResponse(task);
         logger.debug("Successfully create a task with id {} by: {}", response.id(), author);
         return response;
+    }
+
+    @Override
+    public TaskResponse assignTask(Long taskId, String assigneeEmail, String authorEmail) {
+        logger.debug("Attempting to assign task {} to {}", taskId, assigneeEmail);
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+
+        if (!task.getAuthor().equals(authorEmail)) {
+            throw new ForbiddenException("Only task author can assign tasks");
+        }
+
+        if (!accountRepository.existsByEmailIgnoreCase(assigneeEmail)) {
+            throw new AccountNotFoundException("Assignee not found with email: " + assigneeEmail);
+        }
+
+        task.setAssignee(assigneeEmail);
+        Task savedTask = taskRepository.save(task);
+
+        logger.debug("Successfully assigned task {} to {}", taskId, assigneeEmail);
+        return taskMapper.toResponse(savedTask);
     }
 
     private boolean isValidAuthorFormat(String author) {
