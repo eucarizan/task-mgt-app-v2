@@ -1,5 +1,6 @@
 package dev.nj.tms.task;
 
+import dev.nj.tms.account.AccountNotFoundException;
 import dev.nj.tms.account.AccountRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -172,5 +173,24 @@ public class TaskServiceTest {
         Exception exception = assertThrows(TaskNotFoundException.class, () -> taskService.assignTask(taskId, assigneeEmail, authorEmail));
 
         assertTrue(exception.getMessage().contains("Task not found with id: 999"));
+    }
+
+    @Test
+    void assignTask_assigneeNotFound_throwsAccountNotFoundException() {
+        Long taskId = 1L;
+        String assigneeEmail = "nonexistent@mail.com";
+        String authorEmail = "user1@mail.com";
+
+        Task existingTask = new Task("Test Task", "Description", authorEmail);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(accountRepository.existsByEmailIgnoreCase(assigneeEmail)).thenReturn(false);
+
+        Exception exception = assertThrows(
+                AccountNotFoundException.class,
+                () -> taskService.assignTask(taskId, assigneeEmail, authorEmail)
+        );
+
+        assertTrue(exception.getMessage().contains("Assignee not found with email: nonexistent@mail.com"));
     }
 }
