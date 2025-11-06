@@ -1,5 +1,6 @@
 package dev.nj.tms.task;
 
+import dev.nj.tms.account.AccountRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -9,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,6 +21,9 @@ public class TaskServiceTest {
 
     @Mock
     private TaskRepository taskRepository;
+
+    @Mock
+    private AccountRepository accountRepository;
 
     @Mock
     private TaskMapper taskMapper;
@@ -34,7 +39,7 @@ public class TaskServiceTest {
         Task t2 = new Task("T2", "D2", "user1@mail.com");
         Task t3 = new Task("T3", "D3", "user2@mail.com");
 
-        when(taskRepository.findAll()).thenReturn(List.of(t1, t2, t3));
+        when(taskRepository.findAll(any(Sort.class))).thenReturn(List.of(t1, t2, t3));
         when(taskMapper.toResponse(t1)).thenReturn(new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none"));
         when(taskMapper.toResponse(t2)).thenReturn(new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none"));
         when(taskMapper.toResponse(t3)).thenReturn(new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none"));
@@ -46,7 +51,7 @@ public class TaskServiceTest {
         long user2Count = responses.stream().filter(r -> "user2@mail.com".equals(r.author())).count();
         assertEquals(2, user1Count);
         assertEquals(1, user2Count);
-        verify(taskRepository).findAll();
+        verify(taskRepository).findAll(any(Sort.class));
         verify(taskMapper, times(3)).toResponse(any(Task.class));
     }
 
@@ -129,5 +134,30 @@ public class TaskServiceTest {
         ArgumentCaptor<Task> savedTaskCaptor = ArgumentCaptor.forClass(Task.class);
         verify(taskRepository).save(savedTaskCaptor.capture());
         assertEquals(expectedAuthor, savedTaskCaptor.getValue().getAuthor());
+    }
+
+    @Test
+    void assignTask_validAssignee_returnsTaskWithAssignee() {
+        Long taskId = 1L;
+        String assigneeEmail = "user2@mail.com";
+        String authorEmail = "user1@mail.com";
+
+        Task existingTask = new Task("Test Task", "Description", authorEmail);
+        existingTask.setAssignee(null);
+
+        Task updatedTask = new Task("Test Task", "Description", authorEmail);
+        updatedTask.setAssignee(assigneeEmail);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(accountRepository.existsByEmailIgnoreCase(assigneeEmail)).thenReturn(true);
+        when(taskRepository.save(any(Task.class))).thenReturn(updatedTask);
+        when(taskMapper.toResponse(updatedTask)).thenReturn(new TaskResponse("1", "Test Task", "Description", "CREATED", authorEmail, assigneeEmail));
+
+        TaskResponse response = taskService.assignTask(taskId, assigneeEmail, authorEmail);
+
+        assertEquals(assigneeEmail, response.assignee());
+        verify(taskRepository).findById(taskId);
+        verify(accountRepository).existsByEmailIgnoreCase(assigneeEmail);
+        verify(taskRepository).save(existingTask);
     }
 }
