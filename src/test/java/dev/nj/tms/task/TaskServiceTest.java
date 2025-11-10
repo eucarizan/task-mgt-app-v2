@@ -282,4 +282,25 @@ public class TaskServiceTest {
         verify(taskRepository).findById(taskId);
         verify(taskRepository).save(existingTask);
     }
+
+    @Test
+    void updateTaskStatus_userIsNeitherAuthorNorAssignee_throwsForbiddenException() {
+        Long taskId = 1L;
+        String authorEmail = "user1@mail.com";
+        String assigneeEmail = "user2@mail.com";
+        String differentUser = "user3@mail.com";
+        TaskStatus newStatus = TaskStatus.IN_PROGRESS;
+
+        Task existingTask = new Task("Test Task", "Description", authorEmail);
+        existingTask.setAssignee(assigneeEmail);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+
+        Exception exception = assertThrows(
+                ForbiddenException.class,
+                () -> taskService.updateTaskStatus(taskId, newStatus, differentUser)
+        );
+
+        assertTrue(exception.getMessage().contains("Only task author or assignee can update task status"));
+    }
 }
