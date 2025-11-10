@@ -334,4 +334,18 @@ public class TaskControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertInstanceOf(IllegalArgumentException.class, result.getResolvedException()));
     }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void updateTasksStatus_blankStatus_returns400() throws Exception {
+        Long taskId = 1L;
+        UpdateTaskStatusRequest request = new UpdateTaskStatusRequest("   ");
+
+        mockMvc.perform(put("/api/tasks/{taskId}/status", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("status is required")));
+    }
 }
