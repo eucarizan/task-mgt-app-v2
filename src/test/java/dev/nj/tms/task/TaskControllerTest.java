@@ -82,65 +82,6 @@ public class TaskControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user@example.com")
-    void createTask_shouldReturn200AndBody_whenValidRequestAndAuth() throws Exception {
-        String title = "My Task";
-        String description = "Do something important";
-        String expectedAuthor = "user@example.com";
-
-        CreateTaskRequest dto = new CreateTaskRequest(title, description);
-        TaskResponse serviceResponse = new TaskResponse("42", title, description, "CREATED", expectedAuthor, "none");
-
-        when(taskService.createTask(eq(title), eq(description), eq(expectedAuthor))).thenReturn(serviceResponse);
-
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(dto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.title").value(title))
-                .andExpect(jsonPath("$.description").value(description))
-                .andExpect(jsonPath("$.status").value("CREATED"))
-                .andExpect(jsonPath("$.author").value("user@example.com"));
-    }
-
-    @Test
-    @WithMockUser(username = "user@example.com")
-    void createTask_shouldReturn400_whenTitleIsBlank() throws Exception {
-        CreateTaskRequest dto = new CreateTaskRequest("   ", "Do something");
-
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(dto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.messages").isArray())
-                .andExpect(jsonPath("$.messages", hasItem("title should not be blank")));
-    }
-
-    @Test
-    @WithMockUser(username = "user@example.com")
-    void createTask_shouldReturn400_whenDescriptionIsBlank() throws Exception {
-        CreateTaskRequest dto = new CreateTaskRequest("My Task", "   ");
-
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(dto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.messages").isArray())
-                .andExpect(jsonPath("$.messages", hasItem("description should not be blank")));
-    }
-
-    @Test
-    void createTask_shouldReturn400_whenNoAuth() throws Exception {
-        CreateTaskRequest dto = new CreateTaskRequest("My Task", "Do something");
-
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(dto)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
     @WithMockUser(username = "user1@mail.com")
     void get_noFilter_returnsThree_forUser1() throws Exception {
         List<TaskResponse> expectedTasks = List.of(
@@ -218,6 +159,84 @@ public class TaskControllerTest {
                 .andExpect(result -> assertInstanceOf(IllegalArgumentException.class, result.getResolvedException()));
 
         verify(taskService).getTasksByAuthor("not-an-email");
+    }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void get_filterByAssignee_returnsTaskForAssignee() throws Exception {
+        String assigneeEmail = "user2@mail.com";
+        List<TaskResponse> expectedTasks = List.of(
+                new TaskResponse("1", "Task 1", "Description 1", "CREATED", "user1@mail.com", assigneeEmail),
+                new TaskResponse("2", "Task 2", "Description 2", "IN_PROGRESS", "user3@mail.com", assigneeEmail)
+        );
+
+        when(taskService.getTasksByAssignee(assigneeEmail)).thenReturn(expectedTasks);
+
+        mockMvc.perform(get("/api/tasks")
+                        .param("assignee", assigneeEmail))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].assignee").value(assigneeEmail))
+                .andExpect(jsonPath("$[1].assignee").value(assigneeEmail));
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void createTask_shouldReturn200AndBody_whenValidRequestAndAuth() throws Exception {
+        String title = "My Task";
+        String description = "Do something important";
+        String expectedAuthor = "user@example.com";
+
+        CreateTaskRequest dto = new CreateTaskRequest(title, description);
+        TaskResponse serviceResponse = new TaskResponse("42", title, description, "CREATED", expectedAuthor, "none");
+
+        when(taskService.createTask(eq(title), eq(description), eq(expectedAuthor))).thenReturn(serviceResponse);
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.title").value(title))
+                .andExpect(jsonPath("$.description").value(description))
+                .andExpect(jsonPath("$.status").value("CREATED"))
+                .andExpect(jsonPath("$.author").value("user@example.com"));
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void createTask_shouldReturn400_whenTitleIsBlank() throws Exception {
+        CreateTaskRequest dto = new CreateTaskRequest("   ", "Do something");
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("title should not be blank")));
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void createTask_shouldReturn400_whenDescriptionIsBlank() throws Exception {
+        CreateTaskRequest dto = new CreateTaskRequest("My Task", "   ");
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("description should not be blank")));
+    }
+
+    @Test
+    void createTask_shouldReturn400_whenNoAuth() throws Exception {
+        CreateTaskRequest dto = new CreateTaskRequest("My Task", "Do something");
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dto)))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
