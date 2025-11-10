@@ -57,4 +57,23 @@ public class TaskController {
         logger.info("Successfully assigned task {} to {}", taskId, request.assignee());
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/{taskId}/status")
+    public ResponseEntity<TaskResponse> updateTaskStatus(@PathVariable Long taskId,
+                                                         @Valid @RequestBody UpdateTaskStatusRequest request,
+                                                         Principal principal) {
+        String authorEmail = principal.getName().toLowerCase(Locale.ROOT);
+        logger.info("Received request to update task {} stats to {} by {}", taskId, request.status(), authorEmail);
+
+        TaskStatus status;
+        try {
+            status = TaskStatus.valueOf(request.status());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status value. Must be one of: CREATED, IN_PROGRESS, COMPLETED");
+        }
+
+        TaskResponse response = taskService.updateTaskStatus(taskId, status, authorEmail);
+        logger.info("Successfully updated task {} status to {}", taskId, status);
+        return ResponseEntity.ok(response);
+    }
 }
