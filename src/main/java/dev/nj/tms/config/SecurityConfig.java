@@ -36,6 +36,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/accounts").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tasks").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/tasks").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/tasks/*/assign").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/tasks/*/status").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/auth/token").authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
