@@ -19,8 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static dev.nj.tms.TestUtils.*;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -277,6 +276,30 @@ public class TaskControllerIT {
                         .content(asJsonString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.assignee").value("none"));
+    }
+
+    @Test
+    void it_assignTask_validAssignee_returns200() throws Exception {
+        setupTestData();
+
+        String response = mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .param("author", "user1@mail.com"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String taskId = response.split("\"id\":\"")[1].split("\"")[0];
+
+        AssignTaskRequest request = new AssignTaskRequest("user2@mail.com");
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(taskId))
+                .andExpect(jsonPath("$.assignee").value("user2@mail.com"));
     }
 
     private void setupTestData() throws Exception {
