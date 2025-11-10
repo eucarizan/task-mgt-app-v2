@@ -89,6 +89,27 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.toResponse(savedTask);
     }
 
+    @Override
+    public TaskResponse updateTaskStatus(Long taskId, TaskStatus status, String authorEmail) {
+        logger.debug("Attempting to update task {} status to {}", taskId, status);
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+
+        boolean isAuthor = task.getAuthor().equals(authorEmail);
+        boolean isAssignee = task.getAssignee() != null && task.getAssignee().equals(authorEmail);
+
+        if (!isAuthor && !isAssignee) {
+            throw new ForbiddenException("Only task author or assignee can update task status");
+        }
+
+        task.setStatus(status);
+        Task savedTask = taskRepository.save(task);
+
+        logger.debug("Successfully update task {} status to {}", taskId, status);
+        return taskMapper.toResponse(savedTask);
+    }
+
     private boolean isValidAuthorFormat(String author) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9][A-Za-z0-9-]*(\\.[A-Za-z0-9]{2,})+$";
         return author != null && author.matches(emailRegex);
