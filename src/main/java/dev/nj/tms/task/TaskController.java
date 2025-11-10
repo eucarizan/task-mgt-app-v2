@@ -23,14 +23,20 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getTasks(@RequestParam(name = "author", required = false) String author) {
-        logger.info("Received request to get tasks, author filter: [{}]", author);
+    public ResponseEntity<List<TaskResponse>> getTasks(@RequestParam(name = "author", required = false) String author,
+                                                       @RequestParam(name = "assignee", required = false) String assignee) {
+        logger.info("Received request to get tasks, author filter: [{}], assignee filter: [{}]", author, assignee);
         List<TaskResponse> tasks;
 
-        if (author == null) {
-            tasks = taskService.getTasks();
-        } else {
+        if (author != null && assignee != null) {
+            // TODO: implement filtering with both author and assignee
+            throw new UnsupportedOperationException("Filtering by author and assignee is noet yet implemented");
+        } else if (author != null) {
             tasks = taskService.getTasksByAuthor(author);
+        } else if (assignee != null) {
+            tasks = taskService.getTasksByAssignee(assignee);
+        } else {
+            tasks = taskService.getTasks();
         }
 
         logger.info("Returning {} tasks", tasks.size());
