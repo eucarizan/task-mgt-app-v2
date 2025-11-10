@@ -74,11 +74,15 @@ public class TaskServiceImpl implements TaskService {
             throw new ForbiddenException("Only task author can assign tasks");
         }
 
-        if (!accountRepository.existsByEmailIgnoreCase(assigneeEmail)) {
-            throw new AccountNotFoundException("Assignee not found with email: " + assigneeEmail);
+        if ("none".equals(assigneeEmail)) {
+            task.setAssignee(null);
+        } else {
+            if (!accountRepository.existsByEmailIgnoreCase(assigneeEmail)) {
+                throw new AccountNotFoundException("Assignee not found with email: " + assigneeEmail);
+            }
+            task.setAssignee(assigneeEmail);
         }
 
-        task.setAssignee(assigneeEmail);
         Task savedTask = taskRepository.save(task);
 
         logger.debug("Successfully assigned task {} to {}", taskId, assigneeEmail);
