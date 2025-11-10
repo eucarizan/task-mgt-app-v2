@@ -243,4 +243,24 @@ public class TaskControllerTest {
 
         verify(taskService).assignTask(taskId, assigneeEmail, authorEmail);
     }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void assignTask_taskNotFound_returns404() throws Exception {
+        Long taskId = 999L;
+        String assigneeEmail = "user2@mail.com";
+        String authorEmail = "user1@mail.com";
+        AssignTaskRequest request = new AssignTaskRequest(assigneeEmail);
+
+        when(taskService.assignTask(taskId, assigneeEmail, authorEmail))
+                .thenThrow(new TaskNotFoundException("Task not found with id: 999"));
+
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertInstanceOf(TaskNotFoundException.class, result.getResolvedException()));
+
+        verify(taskService).assignTask(taskId, assigneeEmail, authorEmail);
+    }
 }
