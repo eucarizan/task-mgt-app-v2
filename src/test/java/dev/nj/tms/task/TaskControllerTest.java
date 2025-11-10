@@ -3,6 +3,7 @@ package dev.nj.tms.task;
 import dev.nj.tms.account.Account;
 import dev.nj.tms.account.AccountRepository;
 import dev.nj.tms.account.CustomUserDetailsService;
+import dev.nj.tms.config.AssignTaskRequest;
 import dev.nj.tms.config.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -219,5 +219,29 @@ public class TaskControllerTest {
                 .andExpect(result -> assertInstanceOf(IllegalArgumentException.class, result.getResolvedException()));
 
         verify(taskService).getTasksByAuthor("not-an-email");
+    }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void assignTask_validRequest_returns200() throws Exception {
+        Long taskId = 1L;
+        String assigneeEmail = "user2@mail.com";
+        String authorEmail = "user1@mail.com";
+        AssignTaskRequest request = new AssignTaskRequest(assigneeEmail);
+
+        TaskResponse response = new TaskResponse(
+                "1", "Test Task", "Description", "CREATED", authorEmail, assigneeEmail
+        );
+
+        when(taskService.assignTask(taskId, assigneeEmail, authorEmail)).thenReturn(response);
+
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.assignee").value(assigneeEmail));
+
+        verify(taskService).assignTask(taskId, assigneeEmail, authorEmail);
     }
 }
