@@ -259,4 +259,27 @@ public class TaskServiceTest {
         verify(taskRepository).findById(taskId);
         verify(taskRepository).save(existingTask);
     }
+
+    @Test
+    void updateTaskStatus_byAssignee_updatesStatus() {
+        Long taskId = 1L;
+        String authorEmail = "user1@mail.com";
+        String assigneeEmail = "user2@mail.com";
+        TaskStatus newStatus = TaskStatus.COMPLETED;
+
+        Task existingTask = new Task("Test Task", "Description", authorEmail);
+        existingTask.setAssignee(assigneeEmail);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(taskRepository.save(any(Task.class))).thenReturn(existingTask);
+        when(taskMapper.toResponse(existingTask)).thenReturn(
+                new TaskResponse("1", "Test Task", "Description", "COMPLETED", authorEmail, assigneeEmail)
+        );
+
+        TaskResponse response = taskService.updateTaskStatus(taskId, newStatus, assigneeEmail);
+
+        assertEquals("COMPLETED", response.status());
+        verify(taskRepository).findById(taskId);
+        verify(taskRepository).save(existingTask);
+    }
 }
