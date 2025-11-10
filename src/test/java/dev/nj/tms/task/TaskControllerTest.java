@@ -321,4 +321,17 @@ public class TaskControllerTest {
 
         verify(taskService).updateTaskStatus(taskId, TaskStatus.IN_PROGRESS, userEmail);
     }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void updateTaskStatus_invalidStatus_returns400() throws Exception {
+        Long taskId = 1L;
+        UpdateTaskStatusRequest request = new UpdateTaskStatusRequest("INVALID_STATUS");
+
+        mockMvc.perform(put("/api/tasks/{taskId}/status", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertInstanceOf(IllegalArgumentException.class, result.getResolvedException()));
+    }
 }
