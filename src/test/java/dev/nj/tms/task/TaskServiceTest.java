@@ -303,4 +303,20 @@ public class TaskServiceTest {
 
         assertTrue(exception.getMessage().contains("Only task author or assignee can update task status"));
     }
+
+    @Test
+    void updateTaskStatus_taskNotFound_throwsTaskNotFoundException() {
+        Long taskId = 999L;
+        String userEmail = "user1@mail.com";
+        TaskStatus newStatus = TaskStatus.IN_PROGRESS;
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(
+                TaskNotFoundException.class,
+                () -> taskService.updateTaskStatus(taskId, newStatus, userEmail)
+        );
+
+        assertTrue(exception.getMessage().contains("Task not found with id: 999"));
+    }
 }
