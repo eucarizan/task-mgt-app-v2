@@ -238,4 +238,25 @@ public class TaskServiceTest {
         verify(taskRepository).save(existingTask);
         verify(accountRepository, never()).existsByEmailIgnoreCase(anyString());
     }
+
+    @Test
+    void updateTaskStatus_byAuthor_updatesStatus() {
+        Long taskId = 1L;
+        String authorEmail = "user1@mail.com";
+        TaskStatus newStatus = TaskStatus.IN_PROGRESS;
+
+        Task existingTask = new Task("Test Task", "Description", authorEmail);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(taskRepository.save(any(Task.class))).thenReturn(existingTask);
+        when(taskMapper.toResponse(existingTask)).thenReturn(
+                new TaskResponse("1", "Test Task", "Description", "IN_PROGRESS", authorEmail, "none")
+        );
+
+        TaskResponse response = taskService.updateTaskStatus(taskId, newStatus, authorEmail);
+
+        assertEquals("IN_PROGRESS", response.status());
+        verify(taskRepository).findById(taskId);
+        verify(taskRepository).save(existingTask);
+    }
 }
