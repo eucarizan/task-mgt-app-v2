@@ -55,6 +55,25 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public List<TaskResponse> getTasksByAssignee(String assignee) {
+        logger.debug("Attempting to list tasks by assignee: {}", assignee);
+
+        if(!isValidAuthorFormat(assignee)) {
+            logger.warn("Invalid assignee format provided: {}", assignee);
+            throw new IllegalArgumentException("Assignee must be in a valid format");
+        }
+
+        List<TaskResponse> tasks = taskRepository
+                .findAllByAssigneeIgnoreCase(assignee, Sort.by(Sort.Direction.DESC, "created"))
+                .stream()
+                .map(taskMapper::toResponse)
+                .toList();
+
+        logger.debug("Successfully list tasks by assignee: {}", assignee);
+        return tasks;
+    }
+
+    @Override
     public TaskResponse createTask(String title, String description, String author) {
         logger.debug("Attempting to create a task by: {}", author);
         Task task = taskRepository.save(new Task(title, description, author.toLowerCase()));

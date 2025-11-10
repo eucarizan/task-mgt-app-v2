@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends ListCrudRepository<Task, Long>, ListPagingAndSortingRepository<Task, Long> {
     List<Task> findAllByAuthorIgnoreCase(String author, Sort sort);
+
+    List<Task> findAllByAssigneeIgnoreCase(String assignee, Sort sort);
 }
