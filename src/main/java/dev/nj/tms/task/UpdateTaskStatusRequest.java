@@ -1,4 +1,4 @@
-package dev.nj.tms.config;
+package dev.nj.tms.task;
 
 import jakarta.validation.constraints.NotBlank;
 

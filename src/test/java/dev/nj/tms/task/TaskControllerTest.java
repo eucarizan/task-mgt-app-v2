@@ -3,7 +3,6 @@ package dev.nj.tms.task;
 import dev.nj.tms.account.Account;
 import dev.nj.tms.account.AccountRepository;
 import dev.nj.tms.account.CustomUserDetailsService;
-import dev.nj.tms.config.AssignTaskRequest;
 import dev.nj.tms.config.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

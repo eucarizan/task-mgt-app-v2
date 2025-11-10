@@ -46,4 +46,15 @@ public class TaskController {
         logger.info("Successfully created task with id {} by: {}", response.id(), author);
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/{taskId}/assign")
+    public ResponseEntity<TaskResponse> assignTask(@PathVariable Long taskId,
+                                                   @Valid @RequestBody AssignTaskRequest request,
+                                                   Principal principal) {
+        String authorEmail = principal.getName().toLowerCase(Locale.ROOT);
+        logger.info("Received request to assign task {} to {} by {}", taskId, request.assignee(), authorEmail);
+        TaskResponse response = taskService.assignTask(taskId, request.assignee(), authorEmail);
+        logger.info("Successfully assigned task {} to {}", taskId, request.assignee());
+        return ResponseEntity.ok(response);
+    }
 }
