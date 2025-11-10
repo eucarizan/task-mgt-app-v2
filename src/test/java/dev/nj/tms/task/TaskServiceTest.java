@@ -212,4 +212,30 @@ public class TaskServiceTest {
 
         assertTrue(exception.getMessage().contains("Only task author can assign tasks"));
     }
+
+    @Test
+    void assignTask_assigneeIsNone_unassignTask() {
+        Long taskId = 1L;
+        String assigneeEmail = "none";
+        String authorEmail = "user1@mail.com";
+
+        Task existingTask = new Task("Test Task", "Description", authorEmail);
+        existingTask.setAssignee("user2@mail.com");
+
+        Task updatedTask = new Task("Test Task", "Description", authorEmail);
+        updatedTask.setAssignee(null);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(taskRepository.save(any(Task.class))).thenReturn(updatedTask);
+        when(taskMapper.toResponse(updatedTask)).thenReturn(
+                new TaskResponse("1", "Test Task", "Description", "CREATED", authorEmail, "none")
+        );
+
+        TaskResponse response = taskService.assignTask(taskId, assigneeEmail, authorEmail);
+
+        assertEquals("none", response.assignee());
+        verify(taskRepository).findById(taskId);
+        verify(taskRepository).save(existingTask);
+        verify(accountRepository, never()).existsByEmailIgnoreCase(anyString());
+    }
 }
