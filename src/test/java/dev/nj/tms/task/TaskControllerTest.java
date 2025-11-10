@@ -283,4 +283,18 @@ public class TaskControllerTest {
 
         verify(taskService).assignTask(taskId, assigneeEmail, differentUser);
     }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void assignTask_blankAssignee_returns400() throws Exception {
+        Long taskId = 1L;
+        AssignTaskRequest request = new AssignTaskRequest("   ");
+
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("assignee is required")));
+    }
 }
