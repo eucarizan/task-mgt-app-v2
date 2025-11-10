@@ -297,4 +297,28 @@ public class TaskControllerTest {
                 .andExpect(jsonPath("$.messages").isArray())
                 .andExpect(jsonPath("$.messages", hasItem("assignee is required")));
     }
+
+    @Test
+    @WithMockUser(username = "user1@mail.com")
+    void updateTaskStatus_validRequest_returns200() throws Exception {
+        Long taskId = 1L;
+        String status = "IN_PROGRESS";
+        String userEmail = "user1@mail.com";
+        UpdateTaskStatusRequest request = new UpdateTaskStatusRequest(status);
+
+        TaskResponse response = new TaskResponse(
+                "1", "Test Task", "Description", "IN_PROGRESS", userEmail, "none"
+        );
+
+        when(taskService.updateTaskStatus(taskId, TaskStatus.IN_PROGRESS, userEmail)).thenReturn(response);
+
+        mockMvc.perform(put("/api/tasks/{taskId}/status", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
+
+        verify(taskService).updateTaskStatus(taskId, TaskStatus.IN_PROGRESS, userEmail);
+    }
 }
