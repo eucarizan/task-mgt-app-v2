@@ -263,4 +263,24 @@ public class TaskControllerTest {
 
         verify(taskService).assignTask(taskId, assigneeEmail, authorEmail);
     }
+
+    @Test
+    @WithMockUser(username = "user3@mail.com")
+    void assignTask_userNotAuthor_returns403() throws Exception {
+        Long taskId = 1L;
+        String assigneeEmail = "user2@mail.com";
+        String differentUser = "user3@mail.com";
+        AssignTaskRequest request = new AssignTaskRequest(assigneeEmail);
+
+        when(taskService.assignTask(taskId, assigneeEmail, differentUser))
+                .thenThrow(new ForbiddenException("Only task author can assign task"));
+
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(result -> assertInstanceOf(ForbiddenException.class, result.getResolvedException()));
+
+        verify(taskService).assignTask(taskId, assigneeEmail, differentUser);
+    }
 }

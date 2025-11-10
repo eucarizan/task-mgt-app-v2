@@ -1,6 +1,8 @@
 package dev.nj.tms.config;
 
+import dev.nj.tms.account.AccountNotFoundException;
 import dev.nj.tms.account.EmailAlreadyExistsException;
+import dev.nj.tms.task.ForbiddenException;
 import dev.nj.tms.task.TaskNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TaskNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleTaskNotFoundException(TaskNotFoundException ex) {
-        logger.error("Not found: {}", ex.getMessage());
+        logger.error("Task Not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, String>> handleForbiddenException(ForbiddenException ex) {
+        logger.error("Forbidden: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAccountNotFoundException(AccountNotFoundException ex) {
+        logger.error("Account not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
     }
 
