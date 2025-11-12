@@ -373,6 +373,30 @@ public class TaskControllerIT {
                 .andExpect(jsonPath("$.message").exists());
     }
 
+    @Test
+    void it_updateTaskStatus_byAuthor_returns200() throws Exception {
+        setupTestData();
+
+        String response = mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .param("author", "user1@mail.com"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String taskId = response.split("\"id\":\"")[1].split("\"")[0];
+
+        UpdateTaskStatusRequest request = new UpdateTaskStatusRequest("IN_PROGRESS");
+        mockMvc.perform(put("/api/tasks/{taskId}/status", taskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(taskId))
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
+    }
+
     private void setupTestData() throws Exception {
         taskRepository.deleteAll();
         tokenRepository.deleteAll();
