@@ -1,5 +1,7 @@
 package dev.nj.tms.task;
 
+import dev.nj.tms.account.Account;
+import dev.nj.tms.account.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -8,6 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -42,9 +45,16 @@ public class TaskServiceIT {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @BeforeEach
     void setUp() {
         taskRepository.deleteAll();
+        accountRepository.deleteAll();
     }
 
     @Test
@@ -169,5 +179,21 @@ public class TaskServiceIT {
         assertEquals(description, response.description());
         assertEquals("CREATED", response.status());
         assertEquals(author, response.author());
+    }
+
+    @Test
+    void it_assignTask_validAssignee_persistsAndReturn() {
+        Account account = new Account("author@mail.com", passwordEncoder.encode("secureP1"));
+        Account assignee = new Account("assignee@mail.com", passwordEncoder.encode("secureP2"));
+        accountRepository.saveAll(List.of(account, assignee));
+
+        Task task = taskRepository.save(new Task("Test Task", "Description", "author@mail.com"));
+
+        TaskResponse response = taskService.assignTask(task.getId(), "assignee@mail.com", "author@mail.com");
+
+        assertEquals("assignee@mail.com", response.assignee());
+
+        Task savedTask = taskRepository.findById(task.getId()).orElseThrow();
+        assertEquals("assignee@mail.com", savedTask.getAssignee());
     }
 }
