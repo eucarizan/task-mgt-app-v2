@@ -11,6 +11,8 @@ public interface TaskService {
 
     List<TaskResponse> getTasksByAssignee(String assignee);
 
+    List<TaskResponse> getTasksByAuthorAndAssignee(String author, String assignee);
+
     TaskResponse assignTask(Long taskId, String assigneeEmail, String authorEmail);
 
     TaskResponse updateTaskStatus(Long taskId, TaskStatus status, String authorEmail);

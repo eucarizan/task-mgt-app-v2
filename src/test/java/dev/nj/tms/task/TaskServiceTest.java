@@ -147,7 +147,7 @@ public class TaskServiceTest {
 
         List<Task> tasks = List.of(task1, task2);
 
-        when(taskRepository.findAllByAuthorIgnoreCaseAndAssigneIgnoreCase(
+        when(taskRepository.findAllByAuthorIgnoreCaseAndAssigneeIgnoreCase(
                 eq(authorEmail), eq(assigneeEmail), any(Sort.class))).thenReturn(tasks);
         when(taskMapper.toResponse(task1))
                 .thenReturn(new TaskResponse( "1", "Task 1", "Description 1", "CREATED", authorEmail, assigneeEmail));

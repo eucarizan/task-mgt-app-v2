@@ -12,4 +12,6 @@ public interface TaskRepository extends ListCrudRepository<Task, Long>, ListPagi
     List<Task> findAllByAuthorIgnoreCase(String author, Sort sort);
 
     List<Task> findAllByAssigneeIgnoreCase(String assignee, Sort sort);
+
+    List<Task> findAllByAuthorIgnoreCaseAndAssigneeIgnoreCase(String author, String assignee, Sort sort);
 }
