@@ -397,6 +397,39 @@ public class TaskControllerIT {
                 .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
     }
 
+    @Test
+    void it_updateTaskStatus_byAssignee_returns200() throws Exception {
+        setupTestData();
+
+        String response = mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .param("author", "user1@mail.com"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String taskId = response.split("\"id\":\"")[1].split("\"")[0];
+
+        AssignTaskRequest assignRequest = new AssignTaskRequest("user2@mail.com");
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(assignRequest)))
+                .andExpect(status().isOk());
+
+        String user2Token = createToken("user2@mail.com", "secureP2", mockMvc);
+
+        UpdateTaskStatusRequest statusRequest = new UpdateTaskStatusRequest("COMPLETED");
+        mockMvc.perform(put("/api/tasks/{taskId}/status", taskId)
+                        .header("Authorization", "Bearer " + user2Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(statusRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(taskId))
+                .andExpect(jsonPath("$.status").value("COMPLETED"));
+    }
+
     private void setupTestData() throws Exception {
         taskRepository.deleteAll();
         tokenRepository.deleteAll();
