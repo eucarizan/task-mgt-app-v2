@@ -302,6 +302,37 @@ public class TaskControllerIT {
                 .andExpect(jsonPath("$.assignee").value("user2@mail.com"));
     }
 
+    @Test
+    void it_assignTask_withNone_unassignsTask() throws Exception {
+        setupTestData();
+
+        String response = mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .param("author", "user1@mail.com"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String taskId = response.split("\"id\":\"")[1].split("\"")[0];
+
+        AssignTaskRequest assignRequest = new AssignTaskRequest("user2@mail.com");
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(assignRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignee").value("user2@mail.com"));
+
+        AssignTaskRequest unassignRequest = new AssignTaskRequest("none");
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(unassignRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignee").value("none"));
+    }
+
     private void setupTestData() throws Exception {
         taskRepository.deleteAll();
         tokenRepository.deleteAll();
