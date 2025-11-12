@@ -333,6 +333,21 @@ public class TaskControllerIT {
                 .andExpect(jsonPath("$.assignee").value("none"));
     }
 
+    @Test
+    void it_assignTask_taskNotFound_returns404() throws Exception {
+        setupTestData();
+
+        Long nonExistentTaskId = 99999L;
+        AssignTaskRequest request = new AssignTaskRequest("user2@mail.com");
+
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", nonExistentTaskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").exists());
+    }
+
     private void setupTestData() throws Exception {
         taskRepository.deleteAll();
         tokenRepository.deleteAll();
