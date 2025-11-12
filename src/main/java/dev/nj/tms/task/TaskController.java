@@ -29,8 +29,7 @@ public class TaskController {
         List<TaskResponse> tasks;
 
         if (author != null && assignee != null) {
-            // TODO: implement filtering with both author and assignee
-            throw new UnsupportedOperationException("Filtering by author and assignee is noet yet implemented");
+            tasks = taskService.getTasksByAuthorAndAssignee(author, assignee);
         } else if (author != null) {
             tasks = taskService.getTasksByAuthor(author);
         } else if (assignee != null) {
