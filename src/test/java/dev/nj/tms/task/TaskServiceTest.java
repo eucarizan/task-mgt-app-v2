@@ -136,6 +136,34 @@ public class TaskServiceTest {
     }
 
     @Test
+    void getTasksByAuthorAndAssignee_returnsTask() {
+        String authorEmail = "user1@mail.com";
+        String assigneeEmail = "user2@mail.com";
+
+        Task task1 = new Task("Task 1", "Description 1", "user1@mail.com");
+        task1.setAssignee(assigneeEmail);
+        Task task2 = new Task("Task 2", "Description 2", "user1@mail.com");
+        task2.setAssignee(assigneeEmail);
+
+        List<Task> tasks = List.of(task1, task2);
+
+        when(taskRepository.findAllByAuthorIgnoreCaseAndAssigneIgnoreCase(
+                eq(authorEmail), eq(assigneeEmail), any(Sort.class))).thenReturn(tasks);
+        when(taskMapper.toResponse(task1))
+                .thenReturn(new TaskResponse( "1", "Task 1", "Description 1", "CREATED", authorEmail, assigneeEmail));
+        when(taskMapper.toResponse(task2))
+                .thenReturn(new TaskResponse( "2", "Task 2", "Description 2", "CREATED", authorEmail, assigneeEmail));
+
+        List<TaskResponse> result = taskService.getTasksByAuthorAndAssignee(authorEmail, assigneeEmail);
+
+        assertEquals(2, result.size());
+        assertEquals(authorEmail, result.get(0).author());
+        assertEquals(assigneeEmail, result.get(0).assignee());
+        verify(taskRepository).findAllByAuthorIgnoreCaseAndAssigneeIgnoreCase(
+                eq(authorEmail), eq(assigneeEmail), any(Sort.class));
+    }
+
+    @Test
     void createTask_shouldReturnStatusCreatedAndLowercasedAuthor() {
         String title = "My Task";
         String description = "Do something important";
