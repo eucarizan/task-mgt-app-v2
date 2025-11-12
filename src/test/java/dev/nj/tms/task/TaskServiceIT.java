@@ -130,6 +130,23 @@ public class TaskServiceIT {
         assertEquals(0, tasks.size());
     }
 
+    @Test
+    void it_getTasksByAssignee_returnsOnlyAssignedTasks() {
+        String user1 = "user1@mail.com";
+        String user2 = "user2@mail.com";
+        Task task1 = new Task("T1", "D1", user1);
+        Task task2 = new Task("T2", "D2", user1);
+        Task task3 = new Task("T3", "D3", user2);
+        task1.setAssignee(user2);
+        task2.setAssignee(user2);
+        task3.setAssignee("other@mail.com");
+        taskRepository.saveAll(List.of(task1, task2, task3));
+
+        List<TaskResponse> tasks = taskService.getTasksByAssignee(user2);
+        assertEquals(2, tasks.size());
+        assertTrue(tasks.stream().allMatch(t -> user2.equals(t.assignee())));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
             "not-an-email",
