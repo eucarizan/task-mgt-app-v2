@@ -348,6 +348,31 @@ public class TaskControllerIT {
                 .andExpect(jsonPath("$.message").exists());
     }
 
+    @Test
+    void it_assignTask_notAuthor_returns403() throws Exception {
+        setupTestData();
+
+        String response = mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .param("author", "user1@mail.com"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String taskId = response.split("\"id\":\"")[1].split("\"")[0];
+
+        String user2Token = createToken("user2@mail.com", "secureP2", mockMvc);
+
+        AssignTaskRequest request = new AssignTaskRequest("user2@mail.com");
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .header("Authorization", "Bearer " + user2Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").exists());
+    }
+
     private void setupTestData() throws Exception {
         taskRepository.deleteAll();
         tokenRepository.deleteAll();
