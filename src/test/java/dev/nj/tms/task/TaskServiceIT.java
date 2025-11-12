@@ -209,4 +209,21 @@ public class TaskServiceIT {
         Task savedTask = taskRepository.findById(task.getId()).orElseThrow();
         assertEquals(TaskStatus.IN_PROGRESS, savedTask.getStatus());
     }
+
+    @Test
+    void it_updateTaskStatus_byAssignee_persistsAndReturn() {
+        String authorEmail = "author@mail.com";
+        String assigneeEmail = "assignee@mail.com";
+        Account author = new Account(authorEmail, passwordEncoder.encode("secureP1"));
+        Account assignee = new Account(assigneeEmail, passwordEncoder.encode("secureP2"));
+        accountRepository.saveAll(List.of(author, assignee));
+        Task task = taskRepository.save(new Task("Test Task", "Description", authorEmail));
+        task.setAssignee(assigneeEmail);
+        task = taskRepository.save(task);
+        TaskResponse response = taskService.updateTaskStatus(task.getId(), TaskStatus.COMPLETED, assigneeEmail);
+
+        assertEquals("COMPLETED", response.status());
+        Task savedTask = taskRepository.findById(task.getId()).orElseThrow();
+        assertEquals(TaskStatus.COMPLETED, savedTask.getStatus());
+    }
 }
