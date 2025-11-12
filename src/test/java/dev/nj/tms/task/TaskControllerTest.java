@@ -181,6 +181,31 @@ public class TaskControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "user1@mail.com")
+    void get_filterByAuthorAndAssignee_returnsFilteredTasks() throws Exception {
+        String authorEmail = "user1@mail.com";
+        String assigneeEmail = "user2@mail.com";
+        List<TaskResponse> expectedTasks = List.of(
+                new TaskResponse("1", "Task 1", "Description 1", "CREATED", authorEmail, assigneeEmail),
+                new TaskResponse("2", "Task 2", "Description 2", "IN_PROGRESS", authorEmail, assigneeEmail)
+        );
+
+        when(taskService.getTasksByAuthorAndAssignee(authorEmail, assigneeEmail)).thenReturn(expectedTasks);
+
+        mockMvc.perform(get("/api/tasks")
+                .param("author", authorEmail)
+                .param("assignee", assigneeEmail))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].author").value(authorEmail))
+                .andExpect(jsonPath("$[0].assignee").value(assigneeEmail))
+                .andExpect(jsonPath("$[1].author").value(authorEmail))
+                .andExpect(jsonPath("$[1].assignee").value(assigneeEmail));
+
+        verify(taskService).getTasksByAuthorAndAssignee(authorEmail, assigneeEmail);
+    }
+
+    @Test
     @WithMockUser(username = "user@example.com")
     void createTask_shouldReturn200AndBody_whenValidRequestAndAuth() throws Exception {
         String title = "My Task";
