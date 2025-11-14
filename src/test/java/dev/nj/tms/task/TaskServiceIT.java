@@ -147,6 +147,31 @@ public class TaskServiceIT {
         assertTrue(tasks.stream().allMatch(t -> user2.equals(t.assignee())));
     }
 
+    @Test
+    void it_getTasksByAuthorAndAssignee_returnsOnlyMatchingTasks() {
+        String author1 = "author1@mail.com";
+        String author2 = "author2@mail.com";
+        String assignee1 = "assignee1@mail.com";
+        String assignee2 = "assignee2@mail.com";
+
+        Task task1 = taskRepository.save(new Task("Task 1", "Description 1", author1));
+        task1.setAssignee(assignee1);
+        Task task2 = taskRepository.save(new Task("Task 2", "Description 2", author1));
+        task2.setAssignee(assignee1);
+        Task task3 = taskRepository.save(new Task("Task 3", "Description 3", author1));
+        task3.setAssignee(assignee2);
+        Task task4 = taskRepository.save(new Task("Task 4", "Description 4", author2));
+        task4.setAssignee(assignee1);
+
+        taskRepository.saveAll(List.of(task1, task2, task3, task4));
+
+        List<TaskResponse> tasks = taskService.getTasksByAuthorAndAssignee(author1, assignee1);
+
+        assertEquals(2, tasks.size());
+        assertTrue(tasks.stream().allMatch(t -> "author1@mail.com".equals(t.author())));
+        assertTrue(tasks.stream().allMatch(t -> "assignee1@mail.com".equals(t.assignee())));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
             "not-an-email",
