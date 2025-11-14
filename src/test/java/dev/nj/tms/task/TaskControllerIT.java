@@ -220,6 +220,37 @@ public class TaskControllerIT {
     }
 
     @Test
+    void it_getTasks_filterByAuthorAndAssignee_returnsMatchingTasks() throws Exception {
+        setupTestData();
+
+        String response = mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .param("author", "user1@mail.com"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String taskId = response.split("\"id\":\"")[1].split("\"")[0];
+
+        AssignTaskRequest request = new AssignTaskRequest("user2@mail.com");
+        mockMvc.perform(put("/api/tasks/{taskId}/assign", taskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .param("author", "user1@mail.com")
+                        .param("assignee", "user2@mail.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].author").value("user1@mail.com"))
+                .andExpect(jsonPath("$[0].assignee").value("user2@mail.com"));
+    }
+
+    @Test
     void it_createTask_returns200AndBody_whenValidRequestAndAuth() throws Exception {
         String email = "it_create_user@mail.com";
         String password = "it_pass_123";
