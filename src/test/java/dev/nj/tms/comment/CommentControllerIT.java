@@ -66,29 +66,31 @@ public class CommentControllerIT {
     @Autowired
     private PasswordEncoder encoder;
 
+    private AccessToken testToken;
+
     @BeforeEach
     void setup() {
         commentRepository.deleteAll();
         tokenRepository.deleteAll();
         taskRepository.deleteAll();
         accountRepository.deleteAll();
+
+        Account testAccount = accountRepository.save(
+                new Account("user@mail.com", encoder.encode("secureP1")));
+
+        testToken = tokenRepository.save(
+                new AccessToken("test-token", testAccount, LocalDateTime.now().plusHours(1)));
     }
 
     @Test
     void it_createComment_returns200_whenValidRequest() throws Exception {
-        Account account = accountRepository.save(
-                new Account("user@mail.com", encoder.encode("secureP1")));
-
-        AccessToken token = tokenRepository.save(
-                new AccessToken("test-token", account, LocalDateTime.now().plusHours(1)));
-
         Task task = taskRepository.save(
                 new Task("Test task", "Description", "author@mail.com"));
 
         CreateCommentRequest request = new CreateCommentRequest("This is a comment");
 
         mockMvc.perform(post("/api/tasks/{taskId}/comments", task.getId())
-                        .header("Authorization", "Bearer " + token.getToken())
+                        .header("Authorization", "Bearer " + testToken.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isOk());
@@ -96,12 +98,6 @@ public class CommentControllerIT {
 
     @Test
     void it_getComments_returns200WithSortedComments() throws Exception {
-        Account account = accountRepository.save(
-                new Account("user@mail.com", encoder.encode("secureP1")));
-
-        AccessToken token = tokenRepository.save(
-                new AccessToken("test-token", account, LocalDateTime.now().plusHours(1)));
-
         Task task = taskRepository.save(
                 new Task("Test task", "Description", "author@mail.com"));
 
@@ -112,7 +108,7 @@ public class CommentControllerIT {
                 new Comment(task.getId(), "Second comment", "user2@mail.com"));
 
         mockMvc.perform(get("/api/tasks/{taskId}/comments", task.getId())
-                        .header("Authorization", "Bearer " + token.getToken()))
+                        .header("Authorization", "Bearer " + testToken.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].text").value("Second comment"))
