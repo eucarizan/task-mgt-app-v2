@@ -3,6 +3,7 @@ package dev.nj.tms.comment;
 import dev.nj.tms.account.AccountRepository;
 import dev.nj.tms.account.CustomUserDetailsService;
 import dev.nj.tms.config.TestSecurityConfig;
+import dev.nj.tms.task.TaskNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,6 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static dev.nj.tms.TestUtils.asJsonString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -57,6 +60,38 @@ public class CommentControllerTest {
 
     @Test
     @WithMockUser(username = "user@mail.com")
+    void createComment_blankText_returns400() throws Exception {
+        Long taskId = 1L;
+        CreateCommentRequest request = new CreateCommentRequest("   ");
+
+        mockMvc.perform(post("/api/tasks/{taskId}/comments", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages").isArray())
+                .andExpect(jsonPath("$.messages", hasItem("text is required")));
+    }
+
+    @Test
+    @WithMockUser(username = "user@mail.com")
+    void createComment_taskNotFound_returns404() throws Exception {
+        Long taskId = 999L;
+        String text = "Comment on missing task";
+        String author = "user@mail.com";
+        CreateCommentRequest request = new CreateCommentRequest(text);
+
+        when(commentService.createComment(taskId, text, author))
+                .thenThrow(new TaskNotFoundException("Task not found wit id: 999"));
+
+        mockMvc.perform(post("/api/tasks/{taskId}/comments", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertInstanceOf(TaskNotFoundException.class, result.getResolvedException()));
+    }
+
+    @Test
+    @WithMockUser(username = "user@mail.com")
     void getComments_validTaskId_returns200WithComments() throws Exception {
         Long taskId = 1L;
         List<CommentResponse> comments = List.of(
@@ -75,5 +110,18 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$[1].text").value("First comment"));
 
         verify(commentService).getCommentsByTaskId(taskId);
+    }
+
+    @Test
+    @WithMockUser(username = "user@mail.com")
+    void getComments_taskNotFound_returns404() throws Exception {
+        Long taskId = 999L;
+
+        when(commentService.getCommentsByTaskId(taskId))
+                .thenThrow(new TaskNotFoundException("Task not found with id: 999"));
+
+        mockMvc.perform(get("/api/tasks/{taskId}/comments", taskId))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertInstanceOf(TaskNotFoundException.class, result.getResolvedException()));
     }
 }
