@@ -1,5 +1,6 @@
 package dev.nj.tms.comment;
 
+import dev.nj.tms.task.TaskNotFoundException;
 import dev.nj.tms.task.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,15 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentResponse createComment(Long taskId, String text, String author) {
-        // TODO: implement
-        return null;
+        logger.debug("Attempting to create comment on task {} by {}", taskId, author);
+
+        taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+
+        Comment comment = new Comment(taskId, text, author);
+        Comment savedComment = commentRepository.save(comment);
+
+        logger.debug("Successfully created comment {} on task {}", savedComment.getId(), taskId);
+        return commentMapper.toResponse(savedComment);
     }
 }
