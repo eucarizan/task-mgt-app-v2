@@ -2,6 +2,7 @@ package dev.nj.tms.task;
 
 import dev.nj.tms.account.AccountRepository;
 import dev.nj.tms.account.NewAccountDto;
+import dev.nj.tms.comment.CreateCommentRequest;
 import dev.nj.tms.token.AccessTokenRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,6 +249,41 @@ public class TaskControllerIT {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].author").value("user1@mail.com"))
                 .andExpect(jsonPath("$[0].assignee").value("user2@mail.com"));
+    }
+
+    @Test
+    void it_getTasks_includesTotalComments() throws Exception {
+        setupTestData();
+
+        String response = mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token)
+                        .param("author", "user1@mail.com"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String taskId = response.split("\"id\":\"")[1].split("\"")[0];
+
+        CreateCommentRequest comment1 = new CreateCommentRequest("First comment");
+        CreateCommentRequest comment2 = new CreateCommentRequest("Second comment");
+
+        mockMvc.perform(post("/api/tasks/{taskId}/comments", taskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(comment1)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/tasks/{taskId}/comments", taskId)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(comment2)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", "Bearer " + user1Token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == '" + taskId + "')].total_comments").value(2));
     }
 
     @Test
