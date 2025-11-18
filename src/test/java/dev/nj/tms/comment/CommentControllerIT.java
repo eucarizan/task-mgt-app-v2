@@ -68,6 +68,7 @@ public class CommentControllerIT {
 
     private AccessToken testToken;
     private Task testTask;
+    private static final String COMMENTS_URL = "/api/tasks/{taskId}/comments";
 
     @BeforeEach
     void setup() {
@@ -90,7 +91,7 @@ public class CommentControllerIT {
     void it_createComment_returns200_whenValidRequest() throws Exception {
         CreateCommentRequest request = new CreateCommentRequest("This is a comment");
 
-        mockMvc.perform(post("/api/tasks/{taskId}/comments", testTask.getId())
+        mockMvc.perform(post(COMMENTS_URL, testTask.getId())
                         .header("Authorization", "Bearer " + testToken.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(request)))
@@ -101,11 +102,23 @@ public class CommentControllerIT {
     void it_createComment_blankText_returns400() throws Exception {
         CreateCommentRequest request = new CreateCommentRequest("   ");
 
-        mockMvc.perform(post("/api/tasks/{taskId}/comments", testTask.getId())
+        mockMvc.perform(post(COMMENTS_URL, testTask.getId())
                         .header("Authorization", "Bearer " + testToken.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void it_createComment_taskNotFound_returns404() throws Exception {
+        Long nonExistentTaskId = 999L;
+        CreateCommentRequest request = new CreateCommentRequest("This is a comment");
+
+        mockMvc.perform(post(COMMENTS_URL, nonExistentTaskId)
+                        .header("Authorization", "Bearer " + testToken.getToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -116,7 +129,7 @@ public class CommentControllerIT {
         Comment comment2 = commentRepository.save(
                 new Comment(testTask.getId(), "Second comment", "user2@mail.com"));
 
-        mockMvc.perform(get("/api/tasks/{taskId}/comments", testTask.getId())
+        mockMvc.perform(get(COMMENTS_URL, testTask.getId())
                         .header("Authorization", "Bearer " + testToken.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
