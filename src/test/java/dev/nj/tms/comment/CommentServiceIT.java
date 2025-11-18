@@ -108,4 +108,15 @@ public class CommentServiceIT {
         assertEquals("Second comment", comments.get(1).text());
         assertEquals("First comment", comments.get(2).text());
     }
+
+    @Test
+    void it_getCommentsById_taskNotFound_throwsTaskNotFoundException() {
+        Long nonExistentTaskId = 999L;
+
+        Exception exception = assertThrows(
+                TaskNotFoundException.class,
+                () -> commentService.getCommentsByTaskId(nonExistentTaskId));
+
+        assertTrue(exception.getMessage().contains("Task not found"));
+    }
 }
