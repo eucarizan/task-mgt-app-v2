@@ -12,10 +12,14 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static dev.nj.tms.TestUtils.asJsonString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CommentController.class)
@@ -49,5 +53,27 @@ public class CommentControllerTest {
                 .andExpect(status().isOk());
 
         verify(commentService).createComment(taskId, text, author);
+    }
+
+    @Test
+    @WithMockUser(username = "user@mail.com")
+    void getComments_validTaskId_returns200WithComments() throws Exception {
+        Long taskId = 1L;
+        List<CommentResponse> comments = List.of(
+                new CommentResponse("2", "1", "Second comment", "user2@mail.com"),
+                new CommentResponse("1", "1", "First comment", "user1@mail.com")
+        );
+
+        when(commentService.getCommentsByTaskId(taskId)).thenReturn(comments);
+
+        mockMvc.perform(get("/api/tasks/{taskId}/comments", taskId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value("2"))
+                .andExpect(jsonPath("$[0].text").value("Second comment"))
+                .andExpect(jsonPath("$[1].id").value("1"))
+                .andExpect(jsonPath("$[1].text").value("First comment"));
+
+        verify(commentService).getCommentsByTaskId(taskId);
     }
 }
