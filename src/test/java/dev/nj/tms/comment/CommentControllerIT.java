@@ -24,7 +24,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.LocalDateTime;
 
 import static dev.nj.tms.TestUtils.asJsonString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -67,9 +69,9 @@ public class CommentControllerIT {
     @BeforeEach
     void setup() {
         commentRepository.deleteAll();
+        tokenRepository.deleteAll();
         taskRepository.deleteAll();
         accountRepository.deleteAll();
-        tokenRepository.deleteAll();
     }
 
     @Test
@@ -90,5 +92,30 @@ public class CommentControllerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void it_getComments_returns200WithSortedComments() throws Exception {
+        Account account = accountRepository.save(
+                new Account("user@mail.com", encoder.encode("secureP1")));
+
+        AccessToken token = tokenRepository.save(
+                new AccessToken("test-token", account, LocalDateTime.now().plusHours(1)));
+
+        Task task = taskRepository.save(
+                new Task("Test task", "Description", "author@mail.com"));
+
+        Comment comment1 = commentRepository.save(
+                new Comment(task.getId(), "First comment", "user1@mail.com"));
+        Thread.sleep(10);
+        Comment comment2 = commentRepository.save(
+                new Comment(task.getId(), "Second comment", "user2@mail.com"));
+
+        mockMvc.perform(get("/api/tasks/{taskId}/comments", task.getId())
+                        .header("Authorization", "Bearer " + token.getToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].text").value("Second comment"))
+                .andExpect(jsonPath("$[1].text").value("First comment"));
     }
 }
