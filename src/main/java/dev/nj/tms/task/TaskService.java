@@ -5,13 +5,13 @@ import java.util.List;
 public interface TaskService {
     TaskResponse createTask(String title, String description, String author);
 
-    List<TaskResponse> getTasks();
+    List<TaskListResponse> getTasks();
 
-    List<TaskResponse> getTasksByAuthor(String author);
+    List<TaskListResponse> getTasksByAuthor(String author);
 
-    List<TaskResponse> getTasksByAssignee(String assignee);
+    List<TaskListResponse> getTasksByAssignee(String assignee);
 
-    List<TaskResponse> getTasksByAuthorAndAssignee(String author, String assignee);
+    List<TaskListResponse> getTasksByAuthorAndAssignee(String author, String assignee);
 
     TaskResponse assignTask(Long taskId, String assigneeEmail, String authorEmail);
 
