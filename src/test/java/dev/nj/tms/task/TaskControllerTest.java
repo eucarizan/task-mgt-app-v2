@@ -84,10 +84,10 @@ public class TaskControllerTest {
     @Test
     @WithMockUser(username = "user1@mail.com")
     void get_noFilter_returnsThree_forUser1() throws Exception {
-        List<TaskResponse> expectedTasks = List.of(
-                new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none", 0),
-                new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none", 0),
-                new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none", 0)
+        List<TaskListResponse> expectedTasks = List.of(
+                new TaskListResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none", 0),
+                new TaskListResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none", 0),
+                new TaskListResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none", 0)
         );
 
         when(taskService.getTasks()).thenReturn(expectedTasks);
@@ -102,9 +102,9 @@ public class TaskControllerTest {
     @Test
     @WithMockUser(username = "user1@mail.com")
     void get_filterSelf_returnsTwo() throws Exception {
-        List<TaskResponse> expectedTasks = List.of(
-                new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none", 0),
-                new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none", 0)
+        List<TaskListResponse> expectedTasks = List.of(
+                new TaskListResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none", 0),
+                new TaskListResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none", 0)
         );
 
         when(taskService.getTasksByAuthor("user1@mail.com")).thenReturn(expectedTasks);
@@ -122,8 +122,8 @@ public class TaskControllerTest {
     @Test
     @WithMockUser(username = "user1@mail.com")
     void get_filterOther_returnsOne() throws Exception {
-        List<TaskResponse> expectedTasks = List.of(
-                new TaskResponse("1", "T1", "D1", "CREATED", "user2@mail.com", "none", 0)
+        List<TaskListResponse> expectedTasks = List.of(
+                new TaskListResponse("1", "T1", "D1", "CREATED", "user2@mail.com", "none", 0)
         );
 
         when(taskService.getTasksByAuthor("user2@mail.com")).thenReturn(expectedTasks);
@@ -165,9 +165,9 @@ public class TaskControllerTest {
     @WithMockUser(username = "user1@mail.com")
     void get_filterByAssignee_returnsTaskForAssignee() throws Exception {
         String assigneeEmail = "user2@mail.com";
-        List<TaskResponse> expectedTasks = List.of(
-                new TaskResponse("1", "Task 1", "Description 1", "CREATED", "user1@mail.com", assigneeEmail, 0),
-                new TaskResponse("2", "Task 2", "Description 2", "IN_PROGRESS", "user3@mail.com", assigneeEmail, 0)
+        List<TaskListResponse> expectedTasks = List.of(
+                new TaskListResponse("1", "Task 1", "Description 1", "CREATED", "user1@mail.com", assigneeEmail, 0),
+                new TaskListResponse("2", "Task 2", "Description 2", "IN_PROGRESS", "user3@mail.com", assigneeEmail, 0)
         );
 
         when(taskService.getTasksByAssignee(assigneeEmail)).thenReturn(expectedTasks);
@@ -185,9 +185,9 @@ public class TaskControllerTest {
     void get_filterByAuthorAndAssignee_returnsFilteredTasks() throws Exception {
         String authorEmail = "user1@mail.com";
         String assigneeEmail = "user2@mail.com";
-        List<TaskResponse> expectedTasks = List.of(
-                new TaskResponse("1", "Task 1", "Description 1", "CREATED", authorEmail, assigneeEmail, 0),
-                new TaskResponse("2", "Task 2", "Description 2", "IN_PROGRESS", authorEmail, assigneeEmail, 0)
+        List<TaskListResponse> expectedTasks = List.of(
+                new TaskListResponse("1", "Task 1", "Description 1", "CREATED", authorEmail, assigneeEmail, 0),
+                new TaskListResponse("2", "Task 2", "Description 2", "IN_PROGRESS", authorEmail, assigneeEmail, 0)
         );
 
         when(taskService.getTasksByAuthorAndAssignee(authorEmail, assigneeEmail)).thenReturn(expectedTasks);
@@ -213,7 +213,7 @@ public class TaskControllerTest {
         String expectedAuthor = "user@example.com";
 
         CreateTaskRequest dto = new CreateTaskRequest(title, description);
-        TaskResponse serviceResponse = new TaskResponse("42", title, description, "CREATED", expectedAuthor, "none", 0);
+        TaskResponse serviceResponse = new TaskResponse("42", title, description, "CREATED", expectedAuthor, "none");
 
         when(taskService.createTask(eq(title), eq(description), eq(expectedAuthor))).thenReturn(serviceResponse);
 
@@ -273,7 +273,7 @@ public class TaskControllerTest {
         AssignTaskRequest request = new AssignTaskRequest(assigneeEmail);
 
         TaskResponse response = new TaskResponse(
-                "1", "Test Task", "Description", "CREATED", authorEmail, assigneeEmail, 0
+                "1", "Test Task", "Description", "CREATED", authorEmail, assigneeEmail
         );
 
         when(taskService.assignTask(taskId, assigneeEmail, authorEmail)).thenReturn(response);
@@ -351,7 +351,7 @@ public class TaskControllerTest {
         UpdateTaskStatusRequest request = new UpdateTaskStatusRequest(status);
 
         TaskResponse response = new TaskResponse(
-                "1", "Test Task", "Description", "IN_PROGRESS", userEmail, "none", 0
+                "1", "Test Task", "Description", "IN_PROGRESS", userEmail, "none"
         );
 
         when(taskService.updateTaskStatus(taskId, TaskStatus.IN_PROGRESS, userEmail)).thenReturn(response);

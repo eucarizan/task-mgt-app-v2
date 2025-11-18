@@ -45,9 +45,9 @@ public class TaskServiceTest {
         Task t3 = new Task("T3", "D3", "user2@mail.com");
 
         when(taskRepository.findAll(any(Sort.class))).thenReturn(List.of(t1, t2, t3));
-        when(taskMapper.toResponse(t1)).thenReturn(new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none", 0));
-        when(taskMapper.toResponse(t2)).thenReturn(new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none", 0));
-        when(taskMapper.toResponse(t3)).thenReturn(new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none", 0));
+        when(taskMapper.toListResponse(t1)).thenReturn(new TaskListResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none", 0));
+        when(taskMapper.toListResponse(t2)).thenReturn(new TaskListResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none", 0));
+        when(taskMapper.toListResponse(t3)).thenReturn(new TaskListResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none", 0));
 
         var responses = taskService.getTasks();
 
@@ -57,7 +57,7 @@ public class TaskServiceTest {
         assertEquals(2, user1Count);
         assertEquals(1, user2Count);
         verify(taskRepository).findAll(any(Sort.class));
-        verify(taskMapper, times(3)).toResponse(any(Task.class));
+        verify(taskMapper, times(3)).toListResponse(any(Task.class));
     }
 
     @Test
@@ -66,8 +66,8 @@ public class TaskServiceTest {
         Task t2 = new Task("T2", "D2", "user1@mail.com");
 
         when(taskRepository.findAllByAuthorIgnoreCase(any(String.class), any(Sort.class))).thenReturn(List.of(t1, t2));
-        when(taskMapper.toResponse(t1)).thenReturn(new TaskResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none", 0));
-        when(taskMapper.toResponse(t2)).thenReturn(new TaskResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none", 0));
+        when(taskMapper.toListResponse(t1)).thenReturn(new TaskListResponse("1", "T1", "D1", "CREATED", "user1@mail.com", "none", 0));
+        when(taskMapper.toListResponse(t2)).thenReturn(new TaskListResponse("2", "T2", "D2", "CREATED", "user1@mail.com", "none", 0));
 
         var responses = taskService.getTasksByAuthor("user1@mail.com");
 
@@ -75,7 +75,7 @@ public class TaskServiceTest {
         long user1Count = responses.stream().filter(r -> "user1@mail.com".equals(r.author())).count();
         assertEquals(2, user1Count);
         verify(taskRepository).findAllByAuthorIgnoreCase(any(String.class), any(Sort.class));
-        verify(taskMapper, times(2)).toResponse(any(Task.class));
+        verify(taskMapper, times(2)).toListResponse(any(Task.class));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class TaskServiceTest {
         Task t3 = new Task("T3", "D3", "user2@mail.com");
 
         when(taskRepository.findAllByAuthorIgnoreCase(any(String.class), any(Sort.class))).thenReturn(List.of(t3));
-        when(taskMapper.toResponse(t3)).thenReturn(new TaskResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none", 0));
+        when(taskMapper.toListResponse(t3)).thenReturn(new TaskListResponse("3", "T3", "D3", "CREATED", "user2@mail.com", "none", 0));
 
         var responses = taskService.getTasksByAuthor("user2@mail.com");
 
@@ -91,7 +91,7 @@ public class TaskServiceTest {
         long user2Count = responses.stream().filter(r -> "user2@mail.com".equals(r.author())).count();
         assertEquals(1, user2Count);
         verify(taskRepository).findAllByAuthorIgnoreCase(any(String.class), any(Sort.class));
-        verify(taskMapper, times(1)).toResponse(any(Task.class));
+        verify(taskMapper, times(1)).toListResponse(any(Task.class));
     }
 
     @Test
@@ -123,12 +123,12 @@ public class TaskServiceTest {
         List<Task> tasks = List.of(task1, task2);
 
         when(taskRepository.findAllByAssigneeIgnoreCase(eq(assigneeEmail), any(Sort.class))).thenReturn(tasks);
-        when(taskMapper.toResponse(task1)).thenReturn(
-                new TaskResponse("1", "Task 1", "Description 1", "CREATED", "user1@mail.com", assigneeEmail, 0));
-        when(taskMapper.toResponse(task2)).thenReturn(
-                new TaskResponse("2", "Task 2", "Description 2", "CREATED", "user1@mail.com", assigneeEmail, 0));
+        when(taskMapper.toListResponse(task1)).thenReturn(
+                new TaskListResponse("1", "Task 1", "Description 1", "CREATED", "user1@mail.com", assigneeEmail, 0));
+        when(taskMapper.toListResponse(task2)).thenReturn(
+                new TaskListResponse("2", "Task 2", "Description 2", "CREATED", "user1@mail.com", assigneeEmail, 0));
 
-        List<TaskResponse> result = taskService.getTasksByAssignee(assigneeEmail);
+        List<TaskListResponse> result = taskService.getTasksByAssignee(assigneeEmail);
 
         assertEquals(2, result.size());
         assertEquals(assigneeEmail, result.get(0).assignee());
@@ -150,12 +150,12 @@ public class TaskServiceTest {
 
         when(taskRepository.findAllByAuthorIgnoreCaseAndAssigneeIgnoreCase(
                 eq(authorEmail), eq(assigneeEmail), any(Sort.class))).thenReturn(tasks);
-        when(taskMapper.toResponse(task1))
-                .thenReturn(new TaskResponse( "1", "Task 1", "Description 1", "CREATED", authorEmail, assigneeEmail, 0));
-        when(taskMapper.toResponse(task2))
-                .thenReturn(new TaskResponse( "2", "Task 2", "Description 2", "CREATED", authorEmail, assigneeEmail, 0));
+        when(taskMapper.toListResponse(task1))
+                .thenReturn(new TaskListResponse( "1", "Task 1", "Description 1", "CREATED", authorEmail, assigneeEmail, 0));
+        when(taskMapper.toListResponse(task2))
+                .thenReturn(new TaskListResponse( "2", "Task 2", "Description 2", "CREATED", authorEmail, assigneeEmail, 0));
 
-        List<TaskResponse> result = taskService.getTasksByAuthorAndAssignee(authorEmail, assigneeEmail);
+        List<TaskListResponse> result = taskService.getTasksByAuthorAndAssignee(authorEmail, assigneeEmail);
 
         assertEquals(2, result.size());
         assertEquals(authorEmail, result.get(0).author());
@@ -175,7 +175,7 @@ public class TaskServiceTest {
 
         when(taskMapper.toResponse(any(Task.class))).thenAnswer(inv -> {
             Task t = inv.getArgument(0);
-            return new TaskResponse("1", t.getTitle(), t.getDescription(), t.getStatus().toString(), t.getAuthor(), t.getAssignee(), 0);
+            return new TaskResponse("1", t.getTitle(), t.getDescription(), t.getStatus().toString(), t.getAuthor(), t.getAssignee());
         });
 
         TaskResponse response = taskService.createTask(title, description, authorEmail);
@@ -208,7 +208,7 @@ public class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
         when(accountRepository.existsByEmailIgnoreCase(assigneeEmail)).thenReturn(true);
         when(taskRepository.save(any(Task.class))).thenReturn(updatedTask);
-        when(taskMapper.toResponse(updatedTask)).thenReturn(new TaskResponse("1", "Test Task", "Description", "CREATED", authorEmail, assigneeEmail, 0));
+        when(taskMapper.toResponse(updatedTask)).thenReturn(new TaskResponse("1", "Test Task", "Description", "CREATED", authorEmail, assigneeEmail));
 
         TaskResponse response = taskService.assignTask(taskId, assigneeEmail, authorEmail);
 
@@ -284,7 +284,7 @@ public class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
         when(taskRepository.save(any(Task.class))).thenReturn(updatedTask);
         when(taskMapper.toResponse(updatedTask)).thenReturn(
-                new TaskResponse("1", "Test Task", "Description", "CREATED", authorEmail, "none", 0)
+                new TaskResponse("1", "Test Task", "Description", "CREATED", authorEmail, "none")
         );
 
         TaskResponse response = taskService.assignTask(taskId, assigneeEmail, authorEmail);
@@ -306,7 +306,7 @@ public class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
         when(taskRepository.save(any(Task.class))).thenReturn(existingTask);
         when(taskMapper.toResponse(existingTask)).thenReturn(
-                new TaskResponse("1", "Test Task", "Description", "IN_PROGRESS", authorEmail, "none", 0)
+                new TaskResponse("1", "Test Task", "Description", "IN_PROGRESS", authorEmail, "none")
         );
 
         TaskResponse response = taskService.updateTaskStatus(taskId, newStatus, authorEmail);
@@ -329,7 +329,7 @@ public class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
         when(taskRepository.save(any(Task.class))).thenReturn(existingTask);
         when(taskMapper.toResponse(existingTask)).thenReturn(
-                new TaskResponse("1", "Test Task", "Description", "COMPLETED", authorEmail, assigneeEmail, 0)
+                new TaskResponse("1", "Test Task", "Description", "COMPLETED", authorEmail, assigneeEmail)
         );
 
         TaskResponse response = taskService.updateTaskStatus(taskId, newStatus, assigneeEmail);

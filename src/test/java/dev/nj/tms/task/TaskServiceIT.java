@@ -68,7 +68,7 @@ public class TaskServiceIT {
 
         taskRepository.saveAll(List.of(task1, task2, task3));
 
-        List<TaskResponse> tasks = taskService.getTasks();
+        List<TaskListResponse> tasks = taskService.getTasks();
 
         assertEquals(3, tasks.size(), "Should return 3 tasks");
 
@@ -96,7 +96,7 @@ public class TaskServiceIT {
 
         taskRepository.saveAll(List.of(task1, task2, task3));
 
-        List<TaskResponse> tasks = taskService.getTasksByAuthor("user1@mail.com");
+        List<TaskListResponse> tasks = taskService.getTasksByAuthor("user1@mail.com");
 
         assertEquals(2, tasks.size());
         assertEquals(2, tasks.stream().filter(task -> "user1@mail.com".equalsIgnoreCase(task.author())).count());
@@ -110,7 +110,7 @@ public class TaskServiceIT {
 
         taskRepository.saveAll(List.of(task1, task2, task3));
 
-        List<TaskResponse> tasks = taskService.getTasksByAuthor("user2@mail.com");
+        List<TaskListResponse> tasks = taskService.getTasksByAuthor("user2@mail.com");
 
         assertEquals(1, tasks.size());
 
@@ -125,7 +125,7 @@ public class TaskServiceIT {
 
     @Test
     void it_filterUnknown_returnsEmpty() {
-        List<TaskResponse> tasks = taskService.getTasksByAuthor("test@mail.com");
+        List<TaskListResponse> tasks = taskService.getTasksByAuthor("test@mail.com");
 
         assertEquals(0, tasks.size());
     }
@@ -142,7 +142,7 @@ public class TaskServiceIT {
         task3.setAssignee("other@mail.com");
         taskRepository.saveAll(List.of(task1, task2, task3));
 
-        List<TaskResponse> tasks = taskService.getTasksByAssignee(user2);
+        List<TaskListResponse> tasks = taskService.getTasksByAssignee(user2);
         assertEquals(2, tasks.size());
         assertTrue(tasks.stream().allMatch(t -> user2.equals(t.assignee())));
     }
@@ -165,7 +165,7 @@ public class TaskServiceIT {
 
         taskRepository.saveAll(List.of(task1, task2, task3, task4));
 
-        List<TaskResponse> tasks = taskService.getTasksByAuthorAndAssignee(author1, assignee1);
+        List<TaskListResponse> tasks = taskService.getTasksByAuthorAndAssignee(author1, assignee1);
 
         assertEquals(2, tasks.size());
         assertTrue(tasks.stream().allMatch(t -> "author1@mail.com".equals(t.author())));

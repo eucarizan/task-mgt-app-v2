@@ -24,19 +24,19 @@ public class TaskServiceImpl implements TaskService {
         this.taskMapper = taskMapper;
     }
 
-    public List<TaskResponse> getTasks() {
+    public List<TaskListResponse> getTasks() {
         logger.debug("Attempting to list tasks");
-        List<TaskResponse> tasks = taskRepository
+        List<TaskListResponse> tasks = taskRepository
                 .findAll(Sort.by(Sort.Direction.DESC, "created"))
                 .stream()
-                .map(taskMapper::toResponse)
+                .map(taskMapper::toListResponse)
                 .toList();
         logger.debug("Successfully list tasks: {}", tasks.size());
         return tasks;
     }
 
     @Override
-    public List<TaskResponse> getTasksByAuthor(String author) {
+    public List<TaskListResponse> getTasksByAuthor(String author) {
         logger.debug("Attempting to list tasks by author: {}", author);
 
         if (!isValidAuthorFormat(author)) {
@@ -44,10 +44,10 @@ public class TaskServiceImpl implements TaskService {
             throw new IllegalArgumentException("Author must be in a valid format");
         }
 
-        List<TaskResponse> tasks = taskRepository
+        List<TaskListResponse> tasks = taskRepository
                 .findAllByAuthorIgnoreCase(author, Sort.by(Sort.Direction.DESC, "created"))
                 .stream()
-                .map(taskMapper::toResponse)
+                .map(taskMapper::toListResponse)
                 .toList();
 
         logger.debug("Successfully list tasks by author: {}", author);
@@ -55,7 +55,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponse> getTasksByAssignee(String assignee) {
+    public List<TaskListResponse> getTasksByAssignee(String assignee) {
         logger.debug("Attempting to list tasks by assignee: {}", assignee);
 
         if(!isValidAuthorFormat(assignee)) {
@@ -63,10 +63,10 @@ public class TaskServiceImpl implements TaskService {
             throw new IllegalArgumentException("Assignee must be in a valid format");
         }
 
-        List<TaskResponse> tasks = taskRepository
+        List<TaskListResponse> tasks = taskRepository
                 .findAllByAssigneeIgnoreCase(assignee, Sort.by(Sort.Direction.DESC, "created"))
                 .stream()
-                .map(taskMapper::toResponse)
+                .map(taskMapper::toListResponse)
                 .toList();
 
         logger.debug("Successfully list tasks by assignee: {}", assignee);
@@ -74,7 +74,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponse> getTasksByAuthorAndAssignee(String author, String assignee) {
+    public List<TaskListResponse> getTasksByAuthorAndAssignee(String author, String assignee) {
         logger.debug("Attempting to list tasks by author: {} and assignee: {}", author, assignee);
 
         if (!isValidAuthorFormat(author)) {
@@ -87,10 +87,10 @@ public class TaskServiceImpl implements TaskService {
             throw new IllegalArgumentException("Assignee must be in valid format");
         }
 
-        List<TaskResponse> tasks = taskRepository
+        List<TaskListResponse> tasks = taskRepository
                 .findAllByAuthorIgnoreCaseAndAssigneeIgnoreCase(author, assignee, Sort.by(Sort.Direction.DESC, "created"))
                 .stream()
-                .map(taskMapper::toResponse)
+                .map(taskMapper::toListResponse)
                 .toList();
 
         logger.debug("Successfully list tasks by author: {} and assigne: {}", author, assignee);

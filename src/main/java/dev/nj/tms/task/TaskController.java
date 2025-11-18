@@ -23,10 +23,10 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getTasks(@RequestParam(name = "author", required = false) String author,
+    public ResponseEntity<List<TaskListResponse>> getTasks(@RequestParam(name = "author", required = false) String author,
                                                        @RequestParam(name = "assignee", required = false) String assignee) {
         logger.info("Received request to get tasks, author filter: [{}], assignee filter: [{}]", author, assignee);
-        List<TaskResponse> tasks;
+        List<TaskListResponse> tasks;
 
         if (author != null && assignee != null) {
             tasks = taskService.getTasksByAuthorAndAssignee(author, assignee);
