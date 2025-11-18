@@ -37,6 +37,8 @@ public class AccessTokenFilter extends OncePerRequestFilter {
         addRequestMatcher("/api/tasks", HttpMethod.POST);
         addRequestMatcher("/api/tasks/*/assign", HttpMethod.PUT);
         addRequestMatcher("/api/tasks/*/status", HttpMethod.PUT);
+        addRequestMatcher("/api/tasks/*/comments", HttpMethod.GET);
+        addRequestMatcher("/api/tasks/*/comments", HttpMethod.POST);
     }
 
     @Override
