@@ -1,6 +1,7 @@
 package dev.nj.tms.comment;
 
 import dev.nj.tms.task.Task;
+import dev.nj.tms.task.TaskNotFoundException;
 import dev.nj.tms.task.TaskRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,10 +11,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -50,6 +50,24 @@ public class CommentServiceTest {
         assertEquals(author, response.author());
         verify(taskRepository).findById(taskId);
         verify(commentRepository).save(any(Comment.class));
+    }
+
+    @Test
+    void createComment_taskNotFound_throwsTaskNotFoundException() {
+        Long taskId = 999L;
+        String text = "Comment on missing task";
+        String author = "user@mail.com";
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(
+                TaskNotFoundException.class,
+                () -> commentService.createComment(taskId, text, author)
+        );
+
+        assertTrue(exception.getMessage().contains("Task not found with id: 999"));
+        verify(taskRepository).findById(taskId);
+        verify(commentRepository, never()).save(any(Comment.class));
     }
 
 }
