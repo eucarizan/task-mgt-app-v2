@@ -1,6 +1,7 @@
 package dev.nj.tms.comment;
 
 import dev.nj.tms.task.Task;
+import dev.nj.tms.task.TaskNotFoundException;
 import dev.nj.tms.task.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,13 +16,16 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 public class CommentServiceIT {
+
+    private Task testTask;
+    private static final String TEST_AUTHOR = "author@mail.com";
+    private static final String TEST_COMMENTER = "commenter@mail.com";
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
@@ -49,45 +53,55 @@ public class CommentServiceIT {
     void setup() {
         commentRepository.deleteAll();
         taskRepository.deleteAll();
+
+        testTask = taskRepository.save(new Task("Test task", "Description", TEST_AUTHOR));
     }
 
     @Test
     void it_createComment_persistsAndReturnComment() {
-        Task task = taskRepository.save(new Task("Test task", "Description", "author@mail.com"));
         String text = "This is a test comment";
-        String authorEmail = "commenter@mail.com";
 
-        CommentResponse response = commentService.createComment(task.getId(), text, authorEmail);
+        CommentResponse response = commentService.createComment(testTask.getId(), text, TEST_COMMENTER);
 
         assertNotNull(response);
         assertNotNull(response.id());
-        assertEquals(task.getId().toString(), response.task_id());
+        assertEquals(testTask.getId().toString(), response.task_id());
         assertEquals(text, response.text());
-        assertEquals(authorEmail, response.author());
+        assertEquals(TEST_COMMENTER, response.author());
 
         Comment savedComment = commentRepository.findById(Long.parseLong(response.id())).orElseThrow();
         assertEquals(text, savedComment.getText());
-        assertEquals(authorEmail, savedComment.getAuthor());
+        assertEquals(TEST_COMMENTER, savedComment.getAuthor());
+    }
+
+    @Test
+    void it_createComment_taskNotFound_throwsTaskNotFoundException() {
+        Long nonExistentTaskId = 999L;
+        String text = "This is a comment";
+
+        Exception exception = assertThrows(
+                TaskNotFoundException.class,
+                () -> commentService.createComment(nonExistentTaskId, text, TEST_COMMENTER));
+
+        assertTrue(exception.getMessage().contains("Task not found"));
     }
 
     @Test
     void it_getCommentsById_returnsSortedNewestFirst() throws InterruptedException {
-        Task task = taskRepository.save(new Task("Test task", "Description", "author@mail.com"));
-
-        Comment comment1 = new Comment(task.getId(), "First comment", "user1@mail.com");
+        Comment comment1 = new Comment(testTask.getId(), "First comment", "user1@mail.com");
         commentRepository.save(comment1);
 
         Thread.sleep(10);
 
-        Comment comment2 = new Comment(task.getId(), "Second comment", "user2@mail.com");
+        Comment comment2 = new Comment(testTask.getId(), "Second comment", "user2@mail.com");
         commentRepository.save(comment2);
 
         Thread.sleep(10);
 
-        Comment comment3 = new Comment(task.getId(), "Third comment", "user3@mail.com");
+        Comment comment3 = new Comment(testTask.getId(), "Third comment", "user3@mail.com");
         commentRepository.save(comment3);
 
-        List<CommentResponse> comments = commentService.getCommentsByTaskId(task.getId());
+        List<CommentResponse> comments = commentService.getCommentsByTaskId(testTask.getId());
 
         assertEquals(3, comments.size());
         assertEquals("Third comment", comments.get(0).text());
