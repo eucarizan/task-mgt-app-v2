@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Locale;
 
 @RestController
@@ -30,5 +31,13 @@ public class CommentController {
         commentService.createComment(taskId, request.text(), author);
         logger.info("Successfully created comment on task {}", taskId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long taskId) {
+        logger.info("Received request to get comments for task {}", taskId);
+        List<CommentResponse> comments = commentService.getCommentsByTaskId(taskId);
+        logger.info("Returning {} comments for task {}", comments.size(), taskId);
+        return ResponseEntity.ok(comments);
     }
 }
