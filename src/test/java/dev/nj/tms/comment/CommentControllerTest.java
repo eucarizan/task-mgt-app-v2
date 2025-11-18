@@ -1,0 +1,53 @@
+package dev.nj.tms.comment;
+
+import dev.nj.tms.account.AccountRepository;
+import dev.nj.tms.account.CustomUserDetailsService;
+import dev.nj.tms.config.TestSecurityConfig;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static dev.nj.tms.TestUtils.asJsonString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(CommentController.class)
+@Import({TestSecurityConfig.class, CustomUserDetailsService.class})
+public class CommentControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private CommentService commentService;
+
+    @MockitoBean
+    private AccountRepository accountRepository;
+
+    @Test
+    @WithMockUser(username = "user@mail.com")
+    void createComment_validRequest_returns200() throws Exception {
+        Long taskId = 1L;
+        String text = "Great task!";
+        String author = "user@mail.com";
+        CreateCommentRequest request = new CreateCommentRequest(text);
+
+        CommentResponse response = new CommentResponse("1", "1", text, author);
+
+        when(commentService.createComment(taskId, text, author)).thenReturn(response);
+
+        mockMvc.perform(post("/api/tasks/{taskId}/comments", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isOk());
+
+        verify(commentService).createComment(taskId, text, author);
+    }
+}
