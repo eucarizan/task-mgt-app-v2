@@ -8,7 +8,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,4 +72,29 @@ public class CommentServiceTest {
         verify(commentRepository, never()).save(any(Comment.class));
     }
 
+    @Test
+    void getCommentByTaskId_returnsCommentsSortedNewest() {
+        Long taskId = 1L;
+
+        Task task = new Task("Task", "Description", "author@mail.com");
+        Comment comment1 = new Comment(taskId, "First comment", "user1@mail.com");
+        Comment comment2 = new Comment(taskId, "Second comment", "user2@mail.com");
+
+        List<Comment> comments = List.of(comment1, comment2);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(commentRepository.findAllByTaskId(eq(taskId), any(Sort.class))).thenReturn(comments);
+        when(commentMapper.toResponse(comment2)).thenReturn(
+                new CommentResponse("2", "1", "Second comment", "user2@mail.com"));
+        when(commentMapper.toResponse(comment1)).thenReturn(
+                new CommentResponse("1", "1", "First comment", "user1@mail.com"));
+
+        List<CommentResponse> result = commentService.getCommentsByTaskId(taskId);
+
+        assertEquals(2, result.size());
+        assertEquals("Second comment", result.get(0).text());
+        assertEquals("First comment", result.get(1).text());
+        verify(taskRepository).findById(taskId);
+        verify(commentRepository).findAllByTaskId(taskId, any(Sort.class));
+    }
 }
