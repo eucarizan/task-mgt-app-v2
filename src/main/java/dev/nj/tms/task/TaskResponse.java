@@ -6,6 +6,7 @@ public record TaskResponse(
         String description,
         String status,
         String author,
-        String assignee
+        String assignee,
+        int total_comments
 ) {
 }
