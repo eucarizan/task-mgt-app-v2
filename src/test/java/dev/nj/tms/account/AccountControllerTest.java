@@ -1,6 +1,6 @@
 package dev.nj.tms.account;
 
-import dev.nj.tms.config.SecurityConfig;
+import dev.nj.tms.config.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AccountController.class)
-@Import({SecurityConfig.class})
+@Import({TestSecurityConfig.class})
 public class AccountControllerTest {
 
     @Autowired

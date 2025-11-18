@@ -3,7 +3,7 @@ package dev.nj.tms.token;
 import dev.nj.tms.account.Account;
 import dev.nj.tms.account.AccountRepository;
 import dev.nj.tms.account.CustomUserDetailsService;
-import dev.nj.tms.config.SecurityConfig;
+import dev.nj.tms.config.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AccessTokenController.class)
-@Import({SecurityConfig.class, CustomUserDetailsService.class})
+@Import({TestSecurityConfig.class, CustomUserDetailsService.class})
 public class AccessTokenControllerTest {
 
     @Autowired
