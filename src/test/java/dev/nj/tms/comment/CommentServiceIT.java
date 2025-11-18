@@ -13,6 +13,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -66,5 +68,30 @@ public class CommentServiceIT {
         Comment savedComment = commentRepository.findById(Long.parseLong(response.id())).orElseThrow();
         assertEquals(text, savedComment.getText());
         assertEquals(authorEmail, savedComment.getAuthor());
+    }
+
+    @Test
+    void it_getCommentsById_returnsSortedNewestFirst() throws InterruptedException {
+        Task task = taskRepository.save(new Task("Test task", "Description", "author@mail.com"));
+
+        Comment comment1 = new Comment(task.getId(), "First comment", "user1@mail.com");
+        commentRepository.save(comment1);
+
+        Thread.sleep(10);
+
+        Comment comment2 = new Comment(task.getId(), "Second comment", "user2@mail.com");
+        commentRepository.save(comment2);
+
+        Thread.sleep(10);
+
+        Comment comment3 = new Comment(task.getId(), "Third comment", "user3@mail.com");
+        commentRepository.save(comment3);
+
+        List<CommentResponse> comments = commentService.getCommentsByTaskId(task.getId());
+
+        assertEquals(3, comments.size());
+        assertEquals("Third comment", comments.get(0).text());
+        assertEquals("Second comment", comments.get(1).text());
+        assertEquals("First comment", comments.get(2).text());
     }
 }
