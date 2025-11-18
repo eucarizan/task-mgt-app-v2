@@ -155,4 +155,10 @@ public class CommentControllerIT {
                         .header("Authorization", "Bearer " + testToken.getToken()))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void it_getComments_noAuth_returns401() throws Exception {
+        mockMvc.perform(get(COMMENTS_URL, testTask.getId()))
+                .andExpect(status().isUnauthorized());
+    }
 }
