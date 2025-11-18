@@ -146,4 +146,13 @@ public class CommentControllerIT {
                 .andExpect(jsonPath("$[0].text").value("Second comment"))
                 .andExpect(jsonPath("$[1].text").value("First comment"));
     }
+
+    @Test
+    void it_getComments_taskNotFound_returns404() throws Exception {
+        Long nonExistentTaskId = 999L;
+
+        mockMvc.perform(get(COMMENTS_URL, nonExistentTaskId)
+                        .header("Authorization", "Bearer " + testToken.getToken()))
+                .andExpect(status().isNotFound());
+    }
 }
