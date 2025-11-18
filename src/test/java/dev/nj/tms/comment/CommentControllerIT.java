@@ -35,6 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 public class CommentControllerIT {
 
+    private static final String COMMENTS_URL = "/api/tasks/{taskId}/comments";
+
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("tms_test")
@@ -47,7 +49,6 @@ public class CommentControllerIT {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
     }
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -68,7 +69,6 @@ public class CommentControllerIT {
 
     private AccessToken testToken;
     private Task testTask;
-    private static final String COMMENTS_URL = "/api/tasks/{taskId}/comments";
 
     @BeforeEach
     void setup() {
@@ -119,6 +119,16 @@ public class CommentControllerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void it_createComment_noAuth_returns401() throws Exception {
+        CreateCommentRequest request = new CreateCommentRequest("This is a comment");
+
+        mockMvc.perform(post(COMMENTS_URL, testTask.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request)))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
