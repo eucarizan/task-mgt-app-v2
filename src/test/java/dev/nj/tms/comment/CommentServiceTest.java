@@ -80,7 +80,7 @@ public class CommentServiceTest {
         Comment comment1 = new Comment(taskId, "First comment", "user1@mail.com");
         Comment comment2 = new Comment(taskId, "Second comment", "user2@mail.com");
 
-        List<Comment> comments = List.of(comment1, comment2);
+        List<Comment> comments = List.of(comment2, comment1);
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
         when(commentRepository.findAllByTaskId(eq(taskId), any(Sort.class))).thenReturn(comments);
@@ -95,6 +95,6 @@ public class CommentServiceTest {
         assertEquals("Second comment", result.get(0).text());
         assertEquals("First comment", result.get(1).text());
         verify(taskRepository).findById(taskId);
-        verify(commentRepository).findAllByTaskId(taskId, any(Sort.class));
+        verify(commentRepository).findAllByTaskId(eq(taskId), any(Sort.class));
     }
 }

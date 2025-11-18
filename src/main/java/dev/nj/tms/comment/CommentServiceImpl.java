@@ -4,7 +4,10 @@ import dev.nj.tms.task.TaskNotFoundException;
 import dev.nj.tms.task.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -33,5 +36,22 @@ public class CommentServiceImpl implements CommentService {
 
         logger.debug("Successfully created comment {} on task {}", savedComment.getId(), taskId);
         return commentMapper.toResponse(savedComment);
+    }
+
+    @Override
+    public List<CommentResponse> getCommentsByTaskId(Long taskId) {
+        logger.debug("Attempting to get comments for task {}", taskId);
+
+        taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+
+        List<CommentResponse> comments = commentRepository
+                .findAllByTaskId(taskId, Sort.by(Sort.Direction.DESC, "created"))
+                .stream()
+                .map(commentMapper::toResponse)
+                .toList();
+
+        logger.debug("Successfully retrieved {} comments for task {}", comments.size(), taskId);
+        return comments;
     }
 }
